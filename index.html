@@ -1,0 +1,3110 @@
+<title>DACP Fleet & Asset Registry</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #F0F2F5;
+    --surface: #FFFFFF;
+    --surface-alt: #F7F8FA;
+    --border: #E2E5EA;
+    --border-focus: #4A7BF7;
+    --text: #1A1D23;
+    --text-secondary: #5A6170;
+    --text-muted: #8A909E;
+    --accent: #4A7BF7;
+    --accent-light: #EEF2FF;
+    --accent-hover: #3A65D9;
+    --success: #16A34A;
+    --success-bg: #ECFDF5;
+    --warning: #D97706;
+    --warning-bg: #FFFBEB;
+    --danger: #DC2626;
+    --danger-bg: #FEF2F2;
+    --info: #2563EB;
+    --info-bg: #EFF6FF;
+    --sidebar-bg: #1E2235;
+    --sidebar-text: #A0A6B8;
+    --sidebar-text-active: #FFFFFF;
+    --sidebar-hover: #282D42;
+    --sidebar-active-bg: rgba(74,123,247,.15);
+    --sidebar-border: #2E3348;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,.12);
+    --radius: 8px;
+    --radius-lg: 12px;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D0F14;
+      --surface: #161921;
+      --surface-alt: #1C1F2A;
+      --border: #282D3E;
+      --border-focus: #5B8BD4;
+      --text: #E8EAF0;
+      --text-secondary: #9CA3B4;
+      --text-muted: #6B7280;
+      --accent: #6B9AFF;
+      --accent-light: #1A2340;
+      --accent-hover: #85ADFF;
+      --success: #22C55E;
+      --success-bg: #0D2818;
+      --warning: #F59E0B;
+      --warning-bg: #2A1F08;
+      --danger: #EF4444;
+      --danger-bg: #2A0F0F;
+      --info: #60A5FA;
+      --info-bg: #0F1A2E;
+      --sidebar-bg: #0B0D12;
+      --sidebar-text: #6B7280;
+      --sidebar-text-active: #E8EAF0;
+      --sidebar-hover: #14161E;
+      --sidebar-active-bg: rgba(107,154,255,.12);
+      --sidebar-border: #1C1F2A;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.4);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D0F14;
+    --surface: #161921;
+    --surface-alt: #1C1F2A;
+    --border: #282D3E;
+    --border-focus: #5B8BD4;
+    --text: #E8EAF0;
+    --text-secondary: #9CA3B4;
+    --text-muted: #6B7280;
+    --accent: #6B9AFF;
+    --accent-light: #1A2340;
+    --accent-hover: #85ADFF;
+    --success: #22C55E;
+    --success-bg: #0D2818;
+    --warning: #F59E0B;
+    --warning-bg: #2A1F08;
+    --danger: #EF4444;
+    --danger-bg: #2A0F0F;
+    --info: #60A5FA;
+    --info-bg: #0F1A2E;
+    --sidebar-bg: #0B0D12;
+    --sidebar-text: #6B7280;
+    --sidebar-text-active: #E8EAF0;
+    --sidebar-hover: #14161E;
+    --sidebar-active-bg: rgba(107,154,255,.12);
+    --sidebar-border: #1C1F2A;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.4);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+  html { height: 100%; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100%;
+    padding-inline: 0;
+    line-height: 1.5;
+  }
+
+  /* Layout */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 240px;
+    background: var(--sidebar-bg);
+    padding: 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 28px 32px;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 28px);
+  }
+
+  /* Sidebar */
+  .logo {
+    padding: 20px 20px 18px;
+    border-bottom: 1px solid var(--sidebar-border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: .5px;
+    flex-shrink: 0;
+  }
+  .logo-text h1 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--sidebar-text-active);
+    letter-spacing: .3px;
+    line-height: 1.2;
+  }
+  .logo-text span {
+    font-size: 11px;
+    color: var(--sidebar-text);
+  }
+  .nav { list-style: none; padding: 8px 0; flex: 1; }
+  .nav-bottom { flex: 0 0 auto; padding: 0 0 8px; }
+  .nav-bottom .nav-divider { margin-top: 0; }
+  .nav li {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--sidebar-text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all .15s;
+    margin: 1px 8px;
+    border-radius: var(--radius);
+  }
+  .nav li:hover { background: var(--sidebar-hover); color: var(--sidebar-text-active); }
+  .nav li.active {
+    background: var(--sidebar-active-bg);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .nav li svg { width: 18px; height: 18px; flex-shrink: 0; opacity: .7; }
+  .nav li.active svg { opacity: 1; }
+  .nav-divider { height: 1px; background: var(--sidebar-border); margin: 8px 20px; }
+  .nav-section-label {
+    padding: 6px 20px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--sidebar-text);
+    opacity: .6;
+    margin-top: 4px;
+  }
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--sidebar-border);
+    font-size: 11px;
+    color: var(--sidebar-text);
+  }
+
+  /* Top bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .topbar h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface-alt); box-shadow: var(--shadow-sm); }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .btn-danger:hover { opacity: .9; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn svg { width: 16px; height: 16px; }
+  .btn-success { background: var(--success); color: #fff; border-color: var(--success); }
+  .btn-success:hover { opacity: .9; }
+  .btn-warning { background: var(--warning); color: #fff; border-color: var(--warning); }
+  .btn-warning:hover { opacity: .9; }
+
+  /* Stats cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+  .stat-card .stat-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .stat-card .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+  .stat-card .stat-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .stat-indicator {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+  }
+
+  /* Card-row asset list */
+  .asset-list-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .asset-list-toolbar {
+    padding: 14px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 9px 12px 9px 36px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: var(--font-body);
+    background: var(--surface-alt) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath d='M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z' stroke='%238A909E' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") 10px center no-repeat;
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s;
+  }
+  .search-input:focus { border-color: var(--border-focus); background-color: var(--surface); }
+  .filter-select {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: var(--font-body);
+    background: var(--surface-alt);
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+  }
+  .filter-select:focus { border-color: var(--border-focus); }
+
+  /* List header row */
+  .asset-list-header {
+    display: grid;
+    grid-template-columns: 1fr 140px 180px 120px;
+    padding: 10px 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-alt);
+    cursor: pointer;
+    user-select: none;
+  }
+  .asset-list-header span:hover { color: var(--text-secondary); }
+
+  /* Asset card rows */
+  .asset-card-row {
+    display: grid;
+    grid-template-columns: 1fr 140px 180px 120px;
+    padding: 14px 20px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .asset-card-row:last-child { border-bottom: none; }
+  .asset-card-row:hover { background: var(--surface-alt); }
+
+  .asset-card-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+  .asset-card-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--surface-alt);
+  }
+  .asset-card-thumb-placeholder {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    background: var(--surface-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .asset-card-text { min-width: 0; }
+  .asset-card-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .asset-card-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .asset-card-badges {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+  }
+
+  /* Company initials avatar */
+  .company-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .avatar-dc { background: #4A7BF7; }
+  .avatar-ncp { background: #E97C2E; }
+  .avatar-ni { background: #7C3AED; }
+  .avatar-ee { background: #059669; }
+  .avatar-vh { background: #DC2626; }
+  .avatar-dh { background: #1E2235; }
+
+  /* Stats column in card row */
+  .asset-card-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .asset-card-stats span { display: flex; align-items: center; gap: 4px; }
+  .asset-card-stats svg { width: 14px; height: 14px; opacity: .6; }
+
+  .asset-card-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+  }
+  .asset-card-actions button {
+    padding: 6px 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    transition: all .12s;
+  }
+  .asset-card-actions button:hover { background: var(--surface-alt); color: var(--text); }
+  .asset-card-actions button.del:hover { color: var(--danger); background: var(--danger-bg); }
+
+  .mono { font-family: var(--font-mono); font-size: 12px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .2px;
+  }
+  .badge-active { background: var(--success-bg); color: var(--success); }
+  .badge-maintenance { background: var(--warning-bg); color: var(--warning); }
+  .badge-retired { background: var(--danger-bg); color: var(--danger); }
+  .badge-fleet { background: var(--info-bg); color: var(--info); }
+  .badge-tool { background: var(--warning-bg); color: var(--warning); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay[hidden] { display: none !important; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 640px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+  }
+  .modal.modal-lg { max-width: 800px; }
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .modal-header h3 { font-size: 17px; font-weight: 700; }
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 20px;
+    padding: 4px;
+    line-height: 1;
+  }
+  .modal-body { padding: 24px; overflow-y: auto; }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+    background: var(--surface);
+  }
+
+  /* Form */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .3px;
+  }
+  .form-group input, .form-group select, .form-group textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13.5px;
+    font-family: var(--font-body);
+    background: var(--surface-alt);
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s, background .15s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--border-focus);
+    background: var(--surface);
+  }
+  .form-group textarea { resize: vertical; min-height: 60px; }
+
+  /* Sectioned form (used inside larger modals like Add/Edit Asset) */
+  .form-section { margin-bottom: 26px; }
+  .form-section:last-of-type { margin-bottom: 0; }
+  .form-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .form-section-title svg { flex-shrink: 0; opacity: .7; }
+
+  /* Checkbox list (e.g. Assigned Assets picker) */
+  .checkbox-list {
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-alt);
+  }
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background .12s;
+  }
+  .checkbox-item:last-child { border-bottom: none; }
+  .checkbox-item:hover { background: var(--surface); }
+  .checkbox-item input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .checkbox-item-sub { color: var(--text-muted); font-size: 12px; }
+
+  /* Inline field hint (e.g. license expiration countdown) */
+  .field-hint { font-size: 11.5px; margin-top: 2px; min-height: 14px; }
+  .field-hint-warning { color: var(--warning); font-weight: 600; }
+  .field-hint-danger { color: var(--danger); font-weight: 600; }
+  .field-hint-muted { color: var(--text-muted); }
+
+
+  /* Settings — theme picker */
+  .theme-option-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface-alt);
+    color: var(--text);
+    cursor: pointer;
+    font-family: var(--font-body);
+    text-align: left;
+    transition: border-color .15s, background .15s;
+  }
+  .theme-option svg { opacity: .8; }
+  .theme-option:hover { border-color: var(--border-focus); }
+  .theme-option.active {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+  .theme-option-label { font-size: 13.5px; font-weight: 700; }
+  .theme-option-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.4; }
+  .theme-option.active .theme-option-desc { color: var(--accent); opacity: .8; }
+  @media (max-width: 600px) {
+    .theme-option-grid { grid-template-columns: 1fr; }
+  }
+
+
+  /* Detail view */
+  .detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .detail-title { font-size: 22px; font-weight: 700; }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .detail-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+  .detail-section h4 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    font-size: 13.5px;
+  }
+  .detail-row .dl { color: var(--text-muted); font-weight: 500; }
+  .detail-row .dv { color: var(--text); font-weight: 600; text-align: right; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    background: var(--sidebar-bg);
+    color: #fff;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: var(--shadow-lg);
+    z-index: 2000;
+    transition: opacity .3s, transform .3s;
+  }
+  .toast[hidden] { display: block !important; opacity: 0; transform: translateY(10px); pointer-events: none; }
+
+  /* Export section */
+  .export-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+  }
+  .export-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .export-section p { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+  .export-grid { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* Photo */
+  .photo-upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    background: var(--surface-alt);
+    position: relative;
+    overflow: hidden;
+  }
+  .photo-upload-zone:hover, .photo-upload-zone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .photo-upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .photo-upload-zone svg { margin-bottom: 6px; color: var(--text-muted); }
+  .photo-upload-zone p { font-size: 12px; color: var(--text-muted); margin: 0; }
+  .photo-upload-zone p strong { color: var(--text-secondary); }
+  .photo-preview { position: relative; display: inline-block; }
+  .photo-preview img {
+    max-width: 100%;
+    max-height: 180px;
+    border-radius: var(--radius);
+    object-fit: cover;
+  }
+  .photo-preview .photo-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(0,0,0,.6);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .photo-preview .photo-remove:hover { background: var(--danger); }
+  .photo-preview-round { width: 96px; }
+  .photo-preview-round img {
+    width: 96px;
+    height: 96px;
+    max-height: none;
+    border-radius: 50%;
+  }
+  .operator-avatar-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .detail-photo {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+    margin-bottom: 12px;
+  }
+
+  /* Documents */
+  .doc-list { list-style: none; padding: 0; }
+  .doc-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .doc-item:last-child { border-bottom: none; }
+  .doc-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+  }
+  .doc-icon-insurance { background: var(--info-bg); color: var(--info); }
+  .doc-icon-registration { background: var(--accent-light); color: var(--accent); }
+  .doc-icon-inspection { background: var(--warning-bg); color: var(--warning); }
+  .doc-icon-receipt { background: var(--success-bg); color: var(--success); }
+  .doc-icon-warranty { background: #F3E8FF; color: #7C3AED; }
+  .doc-icon-other { background: var(--surface-alt); color: var(--text-muted); }
+  .doc-info { flex: 1; min-width: 0; }
+  .doc-info .doc-name { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .doc-info .doc-meta { font-size: 11px; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+  .doc-info .doc-path { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .doc-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; line-height: 1; flex-shrink: 0; }
+  .doc-remove:hover { color: var(--danger); background: var(--danger-bg); }
+  .doc-count-badge {
+    display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px;
+    border-radius: 100px; font-size: 11px; font-weight: 600;
+    background: var(--surface-alt); color: var(--text-muted);
+  }
+  .doc-count-badge.has-docs { background: var(--info-bg); color: var(--info); }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .doc-icon-warranty { background: #2D1B4E; color: #A78BFA; }
+  }
+  :root[data-theme="dark"] .doc-icon-warranty { background: #2D1B4E; color: #A78BFA; }
+
+  /* Maintenance & Compliance tables */
+  .maint-row, .compliance-row {
+    display: grid;
+    padding: 14px 20px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    transition: background .12s;
+    font-size: 13.5px;
+  }
+  .maint-row { grid-template-columns: 1fr 140px 120px 100px 80px; }
+  .compliance-row { grid-template-columns: 1fr 140px 120px 120px 80px; }
+  .maint-row:last-child, .compliance-row:last-child { border-bottom: none; }
+  .maint-row:hover, .compliance-row:hover { background: var(--surface-alt); }
+  .maint-header, .compliance-header {
+    display: grid;
+    padding: 10px 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-alt);
+  }
+  .maint-header { grid-template-columns: 1fr 140px 120px 100px 80px; }
+  .compliance-header { grid-template-columns: 1fr 140px 120px 120px 80px; }
+
+  .badge-overdue { background: var(--danger-bg); color: var(--danger); }
+  .badge-upcoming { background: var(--warning-bg); color: var(--warning); }
+  .badge-current { background: var(--success-bg); color: var(--success); }
+  .badge-completed { background: var(--info-bg); color: var(--info); }
+  .badge-scheduled { background: var(--accent-light); color: var(--accent); }
+
+  .badge-onleave { background: var(--warning-bg); color: var(--warning); }
+  .operator-row, .operator-header {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 0.8fr 0.8fr 80px;
+    align-items: center;
+  }
+  .operator-row {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background .12s;
+    font-size: 13.5px;
+  }
+  .operator-row:last-child { border-bottom: none; }
+  .operator-row:hover { background: var(--surface-alt); }
+  .operator-header {
+    padding: 10px 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-alt);
+  }
+  .operator-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Progress bar for compliance */
+  .compliance-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    overflow: hidden;
+    width: 100%;
+  }
+  .compliance-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .3s;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .mobile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--sidebar-bg);
+      position: sticky;
+      top: env(safe-area-inset-top, 0px);
+      z-index: 100;
+    }
+    .mobile-header .logo-text h1 { color: #fff; }
+    .mobile-header select { background: var(--sidebar-hover); color: #fff; border-color: var(--sidebar-border); }
+    .main { padding: 16px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .asset-list-header, .maint-header, .compliance-header, .operator-header { display: none; }
+    .asset-card-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .maint-row, .compliance-row, .operator-row { grid-template-columns: 1fr; gap: 6px; }
+    .asset-card-stats { margin-top: 4px; }
+    .asset-card-actions { justify-content: flex-start; }
+  }
+  @media (min-width: 769px) {
+    .mobile-header { display: none; }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+  }
+  .empty-state svg { margin-bottom: 12px; opacity: .4; }
+  .empty-state p { font-size: 14px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
+  .tab {
+    padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--text-muted);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px;
+    transition: all .15s; background: none; border-top: none; border-left: none;
+    border-right: none; font-family: var(--font-body);
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+</style>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-icon">DC</div>
+      <div class="logo-text">
+        <h1>DACP</h1>
+        <span>Fleet & Asset Registry</span>
+      </div>
+    </div>
+    <ul class="nav" id="nav">
+      <li class="active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </li>
+      <div class="nav-section-label">Assets</div>
+      <li data-view="fleet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14V9l-3-5H8L5 9z"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/></svg>
+        Fleet &amp; Equipment
+      </li>
+      <li data-view="tools">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        Tools
+      </li>
+      <div class="nav-divider"></div>
+      <div class="nav-section-label">Operations</div>
+      <li data-view="maintenance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        Maintenance
+      </li>
+      <li data-view="compliance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10"/></svg>
+        Compliance
+      </li>
+      <li data-view="operators">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Operators
+      </li>
+      <div class="nav-divider"></div>
+      <li data-view="export">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export Data
+      </li>
+    </ul>
+    <ul class="nav nav-bottom" id="navBottom">
+      <div class="nav-divider"></div>
+      <li data-view="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Settings
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      DACP Holdings &middot; v1.1<br>
+      Last updated: <span id="lastUpdated">—</span>
+    </div>
+  </aside>
+
+  <!-- Mobile Header -->
+  <div class="mobile-header" id="mobileHeader">
+    <div class="logo-text">
+      <h1 style="font-size:14px;">DACP</h1>
+    </div>
+    <select id="mobileNav" style="padding:6px 10px;border:1px solid var(--sidebar-border);border-radius:6px;font-size:13px;font-family:var(--font-body);background:var(--sidebar-hover);color:#fff;">
+      <option value="dashboard">Dashboard</option>
+      <option value="fleet">Fleet & Equipment</option>
+      <option value="tools">Tools</option>
+      <option value="maintenance">Maintenance</option>
+      <option value="compliance">Compliance</option>
+      <option value="operators">Operators</option>
+      <option value="export">Export Data</option>
+      <option value="settings">Settings</option>
+    </select>
+  </div>
+
+  <!-- Main Content -->
+  <main class="main" id="mainContent"></main>
+</div>
+
+<!-- Add/Edit Asset Modal -->
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add Asset</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="assetForm">
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+            Basics
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="f_category">Category</label>
+              <select id="f_category" required>
+                <option value="Fleet">Fleet & Equipment</option>
+                <option value="Tool">Tool</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="f_status">Status</label>
+              <select id="f_status">
+                <option value="Active">Active</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Retired">Retired</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label for="f_type">Type / Name</label>
+              <select id="f_type" required onchange="document.getElementById('f_type_custom').hidden = this.value !== '__custom__'">
+                <option value="">Select type…</option>
+                <optgroup label="Trucks & Vehicles">
+                  <option value="Boom Pump Truck">Boom Pump Truck</option>
+                  <option value="Concrete Pump Truck">Concrete Pump Truck</option>
+                  <option value="Dump Truck">Dump Truck</option>
+                  <option value="Flatbed Truck">Flatbed Truck</option>
+                  <option value="Pickup Truck">Pickup Truck</option>
+                  <option value="Semi Truck">Semi Truck</option>
+                  <option value="Service Truck">Service Truck</option>
+                  <option value="Water Truck">Water Truck</option>
+                  <option value="Box Truck">Box Truck</option>
+                  <option value="Car / SUV">Car / SUV</option>
+                </optgroup>
+                <optgroup label="Trailers">
+                  <option value="Trailer">Trailer</option>
+                  <option value="Flatbed Trailer">Flatbed Trailer</option>
+                  <option value="Lowboy Trailer">Lowboy Trailer</option>
+                  <option value="Tack Trailer">Tack Trailer</option>
+                  <option value="Utility Trailer">Utility Trailer</option>
+                </optgroup>
+                <optgroup label="Heavy Equipment">
+                  <option value="Excavator">Excavator</option>
+                  <option value="Skid Steer">Skid Steer</option>
+                  <option value="Backhoe">Backhoe</option>
+                  <option value="Bulldozer">Bulldozer</option>
+                  <option value="Telehandler">Telehandler</option>
+                  <option value="Wheel Loader">Wheel Loader</option>
+                  <option value="Medium Wheel Loader">Medium Wheel Loader</option>
+                  <option value="Mini Excavator">Mini Excavator</option>
+                  <option value="Motor Grader">Motor Grader</option>
+                </optgroup>
+                <optgroup label="Concrete & Paving">
+                  <option value="Concrete Pump">Concrete Pump</option>
+                  <option value="Mounted Line Pump">Mounted Line Pump</option>
+                  <option value="Asphalt Paver">Asphalt Paver</option>
+                  <option value="Asphalt Compactor">Asphalt Compactor</option>
+                  <option value="Concrete Mixer">Concrete Mixer</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="Generator">Generator</option>
+                  <option value="Compressor">Compressor</option>
+                  <option value="Light Tower">Light Tower</option>
+                  <option value="Forklift">Forklift</option>
+                  <option value="__custom__">Other (custom)…</option>
+                </optgroup>
+              </select>
+              <input type="text" id="f_type_custom" placeholder="Enter custom type…" hidden style="margin-top:8px;">
+            </div>
+            <div class="form-group">
+              <label for="f_model">Model</label>
+              <input type="text" id="f_model" placeholder="e.g. Alliance JXRZ 43">
+            </div>
+            <div class="form-group">
+              <label for="f_fleet">Fleet #</label>
+              <input type="text" id="f_fleet" placeholder="Internal fleet number">
+            </div>
+            <div class="form-group full">
+              <label for="f_serial">Serial / VIN</label>
+              <input type="text" id="f_serial" placeholder="Serial or VIN number">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Location & Contact
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="f_location">Location</label>
+              <input type="text" id="f_location" placeholder="City, State">
+            </div>
+            <div class="form-group">
+              <label for="f_company">Company</label>
+              <select id="f_company">
+                <option value="DACP Construction">DACP Construction</option>
+                <option value="NOLA Concrete Pumping">NOLA Concrete Pumping</option>
+                <option value="Nexa Infrastructure">Nexa Infrastructure</option>
+                <option value="Empire Enterprises">Empire Enterprises</option>
+                <option value="Veho Hospitality">Veho Hospitality</option>
+                <option value="DACP Holdings">DACP Holdings</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label for="f_address">Address</label>
+              <input type="text" id="f_address" placeholder="Full address">
+            </div>
+            <div class="form-group">
+              <label for="f_contact">Contact Person</label>
+              <input type="text" id="f_contact" placeholder="Name">
+            </div>
+            <div class="form-group">
+              <label for="f_phone">Phone</label>
+              <input type="text" id="f_phone" placeholder="(000) 000-0000">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Usage & Insurance
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="f_hours">Hours</label>
+              <input type="text" id="f_hours" placeholder="Operating hours">
+            </div>
+            <div class="form-group">
+              <label for="f_miles">Miles</label>
+              <input type="text" id="f_miles" placeholder="Odometer reading">
+            </div>
+            <div class="form-group">
+              <label for="f_insurance">Insurance</label>
+              <input type="text" id="f_insurance" placeholder="Insurance provider">
+            </div>
+            <div class="form-group">
+              <label for="f_policy">Policy #</label>
+              <input type="text" id="f_policy" placeholder="Policy number">
+            </div>
+            <div class="form-group full">
+              <label for="f_finance">Finance / Monthly</label>
+              <input type="text" id="f_finance" placeholder="$0.00">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            Assigned Operators
+          </div>
+          <div class="form-grid">
+            <div class="form-group full" id="f_operatorPickerWrap">
+              <input type="text" id="f_operatorSearch" placeholder="Search operators to filter..." oninput="filterAssetOperatorOptions()" style="margin-bottom:8px;">
+              <div class="checkbox-list" id="f_assignedOperators"></div>
+            </div>
+            <div class="form-group full field-hint field-hint-muted" id="f_operatorPickerNote" hidden>Save this asset first, then reopen it to edit, to assign operators to it.</div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 001 1h4"/><path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+            Notes & Photo
+          </div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label for="f_notes">Notes</label>
+              <textarea id="f_notes" placeholder="Additional notes..."></textarea>
+            </div>
+            <div class="form-group full">
+              <label>Photo</label>
+              <div id="photoUploadArea">
+                <div class="photo-upload-zone" id="photoDropZone">
+                  <input type="file" id="f_photo_input" accept="image/*">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  <p><strong>Click or drag</strong> to upload a photo</p>
+                  <p>JPEG, PNG — compressed to thumbnail</p>
+                </div>
+              </div>
+              <div class="photo-preview" id="photoPreview" hidden>
+                <img id="photoPreviewImg" src="" alt="Asset photo">
+                <button class="photo-remove" onclick="removePhoto()" title="Remove photo">&times;</button>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label for="f_photoPath">Full-Res File Path (optional)</label>
+              <input type="text" id="f_photoPath" placeholder="e.g. photos/eq001-front.jpg — for future web app reference">
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAsset()">Save Asset</button>
+    </div>
+  </div>
+</div>
+
+<!-- Document Modal -->
+<div class="modal-overlay" id="docModalOverlay" hidden>
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <h3>Add Document Reference</h3>
+      <button class="modal-close" onclick="closeDocModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="docForm" class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group">
+          <label for="d_type">Document Type</label>
+          <select id="d_type" required>
+            <option value="Insurance">Insurance</option>
+            <option value="Registration">Registration</option>
+            <option value="Inspection">Inspection</option>
+            <option value="Receipt">Receipt</option>
+            <option value="Warranty">Warranty</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="d_date">Date</label>
+          <input type="date" id="d_date">
+        </div>
+        <div class="form-group full">
+          <label for="d_name">Document Name</label>
+          <input type="text" id="d_name" placeholder="e.g. 2026 Liability Certificate" required>
+        </div>
+        <div class="form-group full">
+          <label for="d_path">File Path / Location</label>
+          <input type="text" id="d_path" placeholder="e.g. OneDrive/Insurance/cert-2026.pdf">
+        </div>
+        <div class="form-group full">
+          <label for="d_notes">Notes</label>
+          <textarea id="d_notes" rows="2" placeholder="Optional notes..."></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeDocModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDocument()">Add Document</button>
+    </div>
+  </div>
+</div>
+
+<!-- Maintenance Modal -->
+<div class="modal-overlay" id="maintModalOverlay" hidden>
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-header">
+      <h3 id="maintModalTitle">Log Maintenance</h3>
+      <button class="modal-close" onclick="closeMaintModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="maintForm" class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group full">
+          <label for="m_asset">Asset</label>
+          <select id="m_asset" required></select>
+        </div>
+        <div class="form-group">
+          <label for="m_service">Service Type</label>
+          <select id="m_service" required>
+            <option value="Oil Change">Oil Change</option>
+            <option value="Tire Service">Tire Service</option>
+            <option value="Brake Service">Brake Service</option>
+            <option value="Engine Repair">Engine Repair</option>
+            <option value="Hydraulic Service">Hydraulic Service</option>
+            <option value="Electrical">Electrical</option>
+            <option value="Scheduled PM">Scheduled PM</option>
+            <option value="DOT Inspection">DOT Inspection</option>
+            <option value="Bodywork">Bodywork</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="m_status">Status</label>
+          <select id="m_status">
+            <option value="Completed">Completed</option>
+            <option value="Scheduled">Scheduled</option>
+            <option value="In Progress">In Progress</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="m_date">Service Date</label>
+          <input type="date" id="m_date" required>
+        </div>
+        <div class="form-group">
+          <label for="m_nextDue">Next Due</label>
+          <input type="date" id="m_nextDue">
+        </div>
+        <div class="form-group">
+          <label for="m_cost">Cost ($)</label>
+          <input type="text" id="m_cost" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label for="m_vendor">Vendor / Shop</label>
+          <input type="text" id="m_vendor" placeholder="Shop name">
+        </div>
+        <div class="form-group">
+          <label for="m_hours">Hours at Service</label>
+          <input type="text" id="m_hours_maint" placeholder="Current hours">
+        </div>
+        <div class="form-group">
+          <label for="m_miles">Miles at Service</label>
+          <input type="text" id="m_miles_maint" placeholder="Current miles">
+        </div>
+        <div class="form-group full">
+          <label for="m_notes">Notes</label>
+          <textarea id="m_notes" rows="2" placeholder="Work performed, parts replaced, etc."></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeMaintModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMaintRecord()">Save Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- Compliance Modal -->
+<div class="modal-overlay" id="compModalOverlay" hidden>
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-header">
+      <h3 id="compModalTitle">Add Compliance Item</h3>
+      <button class="modal-close" onclick="closeCompModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="compForm" class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group full">
+          <label for="c_asset">Asset</label>
+          <select id="c_asset" required></select>
+        </div>
+        <div class="form-group">
+          <label for="c_type">Item Type</label>
+          <select id="c_type" required>
+            <option value="Insurance">Insurance Policy</option>
+            <option value="Registration">Registration</option>
+            <option value="Inspection">Inspection</option>
+            <option value="DOT Certification">DOT Certification</option>
+            <option value="Emissions">Emissions Test</option>
+            <option value="License">License / Permit</option>
+            <option value="Warranty">Warranty</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="c_status">Status</label>
+          <select id="c_status">
+            <option value="Current">Current</option>
+            <option value="Upcoming">Due Soon</option>
+            <option value="Overdue">Overdue</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="c_issued">Issued / Effective</label>
+          <input type="date" id="c_issued">
+        </div>
+        <div class="form-group">
+          <label for="c_expires">Expiration Date</label>
+          <input type="date" id="c_expires" required>
+        </div>
+        <div class="form-group full">
+          <label for="c_provider">Provider / Authority</label>
+          <input type="text" id="c_provider" placeholder="e.g. State Farm, TxDMV, FMCSA">
+        </div>
+        <div class="form-group full">
+          <label for="c_ref">Reference / Policy #</label>
+          <input type="text" id="c_ref" placeholder="Policy or certificate number">
+        </div>
+        <div class="form-group full">
+          <label for="c_notes">Notes</label>
+          <textarea id="c_notes" rows="2" placeholder="Optional notes..."></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeCompModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCompRecord()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- Operator Modal -->
+<div class="modal-overlay" id="operModalOverlay" hidden>
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="operModalTitle">Add Operator</h3>
+      <button class="modal-close" onclick="closeOperModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="operForm">
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Basics
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="op_name">Full Name</label>
+              <input type="text" id="op_name" placeholder="e.g. Michel Michelena" required>
+            </div>
+            <div class="form-group">
+              <label for="op_role">Role / Title</label>
+              <select id="op_role">
+                <option value="Operator">Operator</option>
+                <option value="Driver">Driver</option>
+                <option value="Foreman">Foreman</option>
+                <option value="Superintendent">Superintendent</option>
+                <option value="Mechanic">Mechanic</option>
+                <option value="Laborer">Laborer</option>
+                <option value="Project Manager">Project Manager</option>
+                <option value="Admin">Admin</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="op_status">Status</label>
+              <select id="op_status">
+                <option value="Active">Active</option>
+                <option value="On Leave">On Leave</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="op_hireDate">Hire Date</label>
+              <input type="date" id="op_hireDate">
+            </div>
+            <div class="form-group full">
+              <label>Profile Photo</label>
+              <div id="op_photoUploadArea">
+                <div class="photo-upload-zone" id="op_photoDropZone">
+                  <input type="file" id="op_photo_input" accept="image/*">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>
+                  <p><strong>Click or drag</strong> to upload a photo</p>
+                  <p>JPEG, PNG — for quick visual reference</p>
+                </div>
+              </div>
+              <div class="photo-preview photo-preview-round" id="op_photoPreview" hidden>
+                <img id="op_photoPreviewImg" src="" alt="Operator photo">
+                <button class="photo-remove" onclick="removeOperPhoto()" title="Remove photo">&times;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Contact & Company
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="op_phone">Phone</label>
+              <input type="tel" id="op_phone" placeholder="(555) 123-4567">
+            </div>
+            <div class="form-group">
+              <label for="op_email">Email</label>
+              <input type="email" id="op_email" placeholder="name@company.com">
+            </div>
+            <div class="form-group">
+              <label for="op_company">Company</label>
+              <select id="op_company">
+                <option value="DACP Construction">DACP Construction</option>
+                <option value="NOLA Concrete Pumping">NOLA Concrete Pumping</option>
+                <option value="Nexa Infrastructure">Nexa Infrastructure</option>
+                <option value="Empire Enterprises">Empire Enterprises</option>
+                <option value="Veho Hospitality">Veho Hospitality</option>
+                <option value="DACP Holdings">DACP Holdings</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="op_location">Location</label>
+              <input type="text" id="op_location" placeholder="e.g. New Orleans, LA">
+            </div>
+            <div class="form-group full">
+              <label for="op_assetSearch">Assigned Assets</label>
+              <input type="text" id="op_assetSearch" placeholder="Search assets to filter..." oninput="filterOperAssetOptions()" style="margin-bottom:8px;">
+              <div class="checkbox-list" id="op_assignedAssets"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10"/></svg>
+            Licensing & Certifications
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="op_license">License / CDL</label>
+              <select id="op_license">
+                <option value="">None</option>
+                <option value="CDL-A">CDL Class A</option>
+                <option value="CDL-B">CDL Class B</option>
+                <option value="CDL-C">CDL Class C</option>
+                <option value="Standard">Standard License</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="op_licenseExp">License Expiration</label>
+              <input type="date" id="op_licenseExp" oninput="updateLicenseExpHint()">
+              <div class="field-hint" id="op_licenseExpHint"></div>
+            </div>
+            <div class="form-group full">
+              <label for="op_certs">Certifications</label>
+              <input type="text" id="op_certs" placeholder="e.g. OSHA 30, Concrete Pump Operator, Crane Operator">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 001 1h4"/><path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+            Notes
+          </div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label for="op_notes">Notes</label>
+              <textarea id="op_notes" rows="2" placeholder="Optional notes..."></textarea>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeOperModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveOperator()">Save Operator</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" hidden></div>
+
+<script>
+// ── Theme ──
+const THEME_KEY = 'dacp_theme_v1';
+function loadTheme() {
+  try { return localStorage.getItem(THEME_KEY) || 'system'; } catch(e) { return 'system'; }
+}
+function applyTheme(theme) {
+  if (theme === 'light' || theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', theme);
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+}
+let currentTheme = loadTheme();
+applyTheme(currentTheme);
+
+function setTheme(theme) {
+  currentTheme = theme;
+  try { localStorage.setItem(THEME_KEY, theme); } catch(e) {}
+  applyTheme(theme);
+  render();
+}
+
+// ── Data Store ──
+const STORAGE_KEY = 'dacp_fleet_assets_v1';
+const MAINT_KEY = 'dacp_maintenance_v1';
+const COMP_KEY = 'dacp_compliance_v1';
+const OPER_KEY = 'dacp_operators_v1';
+
+function loadData() {
+  try { const d = localStorage.getItem(STORAGE_KEY); if (d) return JSON.parse(d); } catch(e) {}
+  return null;
+}
+function saveDataStore() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(assets));
+    localStorage.setItem(MAINT_KEY, JSON.stringify(maintRecords));
+    localStorage.setItem(COMP_KEY, JSON.stringify(compRecords));
+    localStorage.setItem(OPER_KEY, JSON.stringify(operators));
+    document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  } catch(e) {}
+}
+function loadMaint() {
+  try { const d = localStorage.getItem(MAINT_KEY); if (d) return JSON.parse(d); } catch(e) {}
+  return [];
+}
+function loadComp() {
+  try { const d = localStorage.getItem(COMP_KEY); if (d) return JSON.parse(d); } catch(e) {}
+  return [];
+}
+function loadOper() {
+  try { const d = localStorage.getItem(OPER_KEY); if (d) return JSON.parse(d); } catch(e) {}
+  return [];
+}
+
+// Default assets
+const defaultAssets = [
+  {id:'eq001',category:'Fleet',type:'Boom Pump Truck',model:'Alliance JXRZ 43',serial:'1M2GR2RC8SM001739',fleet:'',location:'Rockdale, TX',address:'2721 Charles Martin Hall Rd, Rockdale, TX 76567',contact:'Michel Michelena / Daniela Ruiz',phone:'(737) 279-5502',hours:'843.4',miles:'8,428.6',insurance:'',policy:'',finance:'',company:'DACP Construction',status:'Active',notes:'',created:'2026-09-17',documents:[]},
+  {id:'eq002',category:'Fleet',type:'Mounted Line Pump',model:'Alliance JMP 90H',serial:'1M2MDBAA8S0182424',fleet:'',location:'New Orleans, LA',address:'14285 US-90, Boutte, LA 70039',contact:'Stacie Serna / René Pedraza',phone:'(985) 306-4005 / (504) 515-3962',hours:'177.8',miles:'3,931.4',insurance:'',policy:'',finance:'',company:'NOLA Concrete Pumping',status:'Active',notes:'Purchased 12/17/24 — $259,000',created:'2026-09-17',documents:[]},
+  {id:'eq003',category:'Fleet',type:'Concrete Pump',model:'Schwing SP750-18',serial:'7501633',fleet:'',location:'Florida',address:'5403 N Haverhill Rd, Suite 233, West Palm Beach, FL 33407',contact:'Billy Ovalle / Danny Jr.',phone:'(985) 306-4005 / (737) 279-5502',hours:'28.5',miles:'',insurance:'',policy:'',finance:'',company:'NOLA Concrete Pumping',status:'Active',notes:'',created:'2026-09-17',documents:[]},
+  {id:'eq004',category:'Fleet',type:'Concrete Pump',model:'Schwing SP750-18',serial:'7501649',fleet:'',location:'Rockdale, TX',address:'14285 US-90, Boutte, LA 70039',contact:'Michel Michelena / Daniela Ruiz',phone:'(737) 279-5502',hours:'42.5',miles:'',insurance:'',policy:'',finance:'',company:'DACP Construction',status:'Active',notes:'',created:'2026-09-17',documents:[]},
+  {id:'eq005',category:'Fleet',type:'Trailer',model:'Tack Trailer',serial:'1W9WT3515SK548204',fleet:'',location:'New Orleans, LA',address:'14285 US-90, Boutte, LA 70039',contact:'René Pedraza',phone:'(504) 515-3962',hours:'',miles:'',insurance:'$940.08',policy:'001-70212148',finance:'',company:'DACP Construction',status:'Active',notes:'',created:'2026-09-17',documents:[]},
+  {id:'eq006',category:'Fleet',type:'Telehandler',model:'TL1255-05',serial:'T8201539',fleet:'',location:'Rockdale, TX',address:'2721 Charles Martin Hall Rd, Rockdale, TX 76567',contact:'Daniela Ruiz / Michel Michelena',phone:'(737) 279-5502',hours:'',miles:'',insurance:'$5,341.29',policy:'001-70123683',finance:'',company:'DACP Construction',status:'Active',notes:'',created:'2026-09-17',documents:[]},
+  {id:'eq007',category:'Fleet',type:'Asphalt Compactor',model:'CB2.7-03',serial:'64100849',fleet:'',location:'New Orleans, LA',address:'14285 US-90, Boutte, LA 70039',contact:'Stacie Serna',phone:'(985) 306-4006',hours:'',miles:'',insurance:'$1,289.26',policy:'001-70196096',finance:'',company:'DACP Construction',status:'Active',notes:'',created:'2026-09-17',documents:[]},
+  {id:'eq008',category:'Fleet',type:'Asphalt Compactor',model:'CB7-02',serial:'M5R01048',fleet:'',location:'New Orleans, LA',address:'14285 US-90, Boutte, LA 70039',contact:'Stacie Serna',phone:'(985) 306-4006',hours:'',miles:'',insurance:'$3,247.62',policy:'001-70197494',finance:'',company:'DACP Construction',status:'Active',notes:'',created:'2026-09-17',documents:[]},
+  {id:'eq009',category:'Fleet',type:'Asphalt Paver',model:'AP555-07',serial:'4M600250',fleet:'',location:'New Orleans, LA',address:'14285 US-90, Boutte, LA 70039',contact:'Stacie Serna',phone:'(985) 306-4006',hours:'',miles:'',insurance:'$11,133.01',policy:'001-70197496',finance:'',company:'DACP Construction',status:'Active',notes:'',created:'2026-09-17',documents:[]},
+  {id:'eq010',category:'Fleet',type:'Telehandler',model:'TL1255-05',serial:'T8201541',fleet:'',location:'New Orleans, LA',address:'14285 US-90, Boutte, LA 70039',contact:'Stacie Serna',phone:'(985) 306-4006',hours:'',miles:'',insurance:'$5,341.67',policy:'001-70121997',finance:'',company:'DACP Construction',status:'Active',notes:'',created:'2026-09-17',documents:[]},
+  {id:'eq011',category:'Fleet',type:'Medium Wheel Loader',model:'960GC',serial:'M5T06411',fleet:'',location:'Corsicana, TX',address:'Corsicana, TX',contact:'Daniela Ruiz / Michel Michelena',phone:'(737) 279-5502',hours:'',miles:'',insurance:'$6,079.73',policy:'001-70123084',finance:'',company:'DACP Construction',status:'Active',notes:'',created:'2026-09-17',documents:[]}
+];
+
+let assets = loadData() || [...defaultAssets];
+// Migrate v1.1→v1.2: merge Equipment/Vehicle/Office categories into Fleet
+let migrated = false;
+assets.forEach(a => {
+  if (a.category === 'Equipment' || a.category === 'Vehicle' || a.category === 'Office') { a.category = 'Fleet'; migrated = true; }
+});
+if (!loadData() || migrated) saveDataStore();
+
+let maintRecords = loadMaint();
+let compRecords = loadComp();
+let operators = loadOper();
+
+let currentView = 'dashboard';
+let editingId = null;
+let editingMaintId = null;
+let editingCompId = null;
+let editingOperId = null;
+let sortCol = null;
+let sortDir = 1;
+let searchQuery = '';
+let filterCategory = '';
+let filterStatus = '';
+let filterCompany = '';
+
+// ── Helpers ──
+const COMPANY_AVATARS = {
+  'DACP Construction': { initials: 'DC', cls: 'avatar-dc' },
+  'NOLA Concrete Pumping': { initials: 'NCP', cls: 'avatar-ncp' },
+  'Nexa Infrastructure': { initials: 'NI', cls: 'avatar-ni' },
+  'Empire Enterprises': { initials: 'EE', cls: 'avatar-ee' },
+  'Veho Hospitality': { initials: 'VH', cls: 'avatar-vh' },
+  'DACP Holdings': { initials: 'DH', cls: 'avatar-dh' }
+};
+
+function companyAvatar(company) {
+  const a = COMPANY_AVATARS[company];
+  if (!a) return '';
+  return `<span class="company-avatar ${a.cls}" title="${company}">${a.initials}</span>`;
+}
+
+function docCount(asset) {
+  return (asset.documents && asset.documents.length) || 0;
+}
+
+function assetLabel(a) {
+  return `${a.type}${a.model ? ' — ' + a.model : ''}${a.serial ? ' (' + a.serial.slice(-6) + ')' : ''}`;
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return Infinity;
+  const d = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  return Math.ceil((d - now) / 86400000);
+}
+
+function complianceStatus(expiresStr) {
+  const days = daysUntil(expiresStr);
+  if (days < 0) return 'Overdue';
+  if (days <= 30) return 'Upcoming';
+  return 'Current';
+}
+
+function complianceBadge(status) {
+  const cls = {Overdue:'badge-overdue',Upcoming:'badge-upcoming',Current:'badge-current'}[status] || 'badge-current';
+  return `<span class="badge ${cls}">${status}</span>`;
+}
+
+function maintStatusBadge(status) {
+  const cls = {Completed:'badge-completed','In Progress':'badge-maintenance',Scheduled:'badge-scheduled'}[status] || '';
+  return `<span class="badge ${cls}">${status}</span>`;
+}
+
+function assetSelectOptions() {
+  return assets.map(a => `<option value="${a.id}">${assetLabel(a)} — ${a.company}</option>`).join('');
+}
+
+// ── Navigation ──
+document.getElementById('nav').addEventListener('click', e => {
+  const li = e.target.closest('li[data-view]');
+  if (!li) return;
+  navigate(li.dataset.view);
+});
+document.getElementById('navBottom').addEventListener('click', e => {
+  const li = e.target.closest('li[data-view]');
+  if (!li) return;
+  navigate(li.dataset.view);
+});
+document.getElementById('mobileNav').addEventListener('change', e => navigate(e.target.value));
+
+function navigate(view) {
+  currentView = view;
+  document.querySelectorAll('#nav li, #navBottom li').forEach(li => li.classList.toggle('active', li.dataset.view === view));
+  document.getElementById('mobileNav').value = view;
+  render();
+}
+
+// ── Render ──
+function render() {
+  const main = document.getElementById('mainContent');
+  switch(currentView) {
+    case 'dashboard': main.innerHTML = renderDashboard(); break;
+    case 'fleet': main.innerHTML = renderTable('Fleet'); break;
+    case 'tools': main.innerHTML = renderTable('Tool'); break;
+    case 'maintenance': main.innerHTML = renderMaintenance(); break;
+    case 'compliance': main.innerHTML = renderCompliance(); break;
+    case 'operators': main.innerHTML = renderOperators(); break;
+    case 'export': main.innerHTML = renderExport(); break;
+    case 'settings': main.innerHTML = renderSettings(); break;
+    default: if (currentView.startsWith('detail:')) main.innerHTML = renderDetail(currentView.split(':')[1]);
+  }
+  bindEvents();
+}
+
+function renderDashboard() {
+  const total = assets.length;
+  const active = assets.filter(a => a.status === 'Active').length;
+  const maint = assets.filter(a => a.status === 'Maintenance').length;
+  const cats = {Fleet:0,Tool:0};
+  assets.forEach(a => { if (cats[a.category] !== undefined) cats[a.category]++; });
+  const locations = [...new Set(assets.map(a => a.location).filter(Boolean))];
+  const companies = {};
+  assets.forEach(a => { companies[a.company] = (companies[a.company]||0)+1; });
+  const totalInsurance = assets.reduce((s,a) => {
+    const v = parseFloat((a.insurance||'').replace(/[$,]/g,''));
+    return s + (isNaN(v)?0:v);
+  }, 0);
+
+  // Maintenance & Compliance summary
+  const overdueComp = compRecords.filter(c => complianceStatus(c.expires) === 'Overdue').length;
+  const upcomingComp = compRecords.filter(c => complianceStatus(c.expires) === 'Upcoming').length;
+  const recentMaint = maintRecords.filter(m => m.status === 'Completed').length;
+  const scheduledMaint = maintRecords.filter(m => m.status === 'Scheduled').length;
+  const totalMaintCost = maintRecords.reduce((s,m) => s + (parseFloat((m.cost||'0').replace(/[$,]/g,''))||0), 0);
+
+  return `
+    <div class="topbar">
+      <h2>Dashboard</h2>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="openAddModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Asset
+        </button>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Assets</div>
+        <div class="stat-value">${total}</div>
+        <div class="stat-sub">Across all categories</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active</div>
+        <div class="stat-value" style="color:var(--success)">${active}</div>
+        <div class="stat-sub"><span class="stat-indicator" style="background:var(--success)"></span>${Math.round(active/total*100)||0}% of fleet</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">In Maintenance</div>
+        <div class="stat-value" style="color:var(--warning)">${maint}</div>
+        <div class="stat-sub"><span class="stat-indicator" style="background:var(--warning)"></span>${maint} unit${maint!==1?'s':''} down</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Monthly Insurance</div>
+        <div class="stat-value">$${totalInsurance.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        <div class="stat-sub">Total insured assets: ${assets.filter(a=>a.insurance).length}</div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Fleet & Equipment</div>
+        <div class="stat-value">${cats.Fleet}</div>
+        <div class="stat-sub">Vehicles, machinery & pumps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Maintenance</div>
+        <div class="stat-value">${recentMaint + scheduledMaint}</div>
+        <div class="stat-sub">${scheduledMaint} scheduled · $${totalMaintCost.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})} total cost</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Compliance</div>
+        <div class="stat-value" style="color:${overdueComp?'var(--danger)':upcomingComp?'var(--warning)':'var(--success)'}">${compRecords.length}</div>
+        <div class="stat-sub">${overdueComp ? `<span class="stat-indicator" style="background:var(--danger)"></span>${overdueComp} overdue` : upcomingComp ? `<span class="stat-indicator" style="background:var(--warning)"></span>${upcomingComp} due soon` : `<span class="stat-indicator" style="background:var(--success)"></span>All current`}</div>
+      </div>
+      <div class="stat-card" style="cursor:pointer" onclick="navigate('operators')">
+        <div class="stat-label">Operators</div>
+        <div class="stat-value">${operators.length}</div>
+        <div class="stat-sub">${operators.filter(o=>o.status==='Active').length} active · ${operators.filter(o=>o.license&&o.license!=='').length} CDL holders</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;">
+      <div class="detail-section">
+        <h4>Locations (${locations.length})</h4>
+        ${locations.map(l => {
+          const cnt = assets.filter(a=>a.location===l).length;
+          return `<div class="detail-row"><span class="dl">${l}</span><span class="dv">${cnt} asset${cnt!==1?'s':''}</span></div>`;
+        }).join('')}
+      </div>
+      <div class="detail-section">
+        <h4>By Company</h4>
+        ${Object.entries(companies).sort((a,b)=>b[1]-a[1]).map(([c,n]) =>
+          `<div class="detail-row"><span class="dl" style="display:flex;align-items:center;gap:8px;">${companyAvatar(c)} ${c}</span><span class="dv">${n}</span></div>`
+        ).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderTable(category) {
+  const catLabel = {Fleet:'Fleet & Equipment',Tool:'Tools'}[category];
+  let filtered = assets.filter(a => a.category === category);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(a =>
+      (a.type||'').toLowerCase().includes(q) ||
+      (a.model||'').toLowerCase().includes(q) ||
+      (a.serial||'').toLowerCase().includes(q) ||
+      (a.location||'').toLowerCase().includes(q) ||
+      (a.contact||'').toLowerCase().includes(q) ||
+      (a.company||'').toLowerCase().includes(q)
+    );
+  }
+  if (filterStatus) filtered = filtered.filter(a => a.status === filterStatus);
+  if (filterCompany) filtered = filtered.filter(a => a.company === filterCompany);
+  if (sortCol) {
+    filtered.sort((a,b) => {
+      const va = (a[sortCol]||'').toLowerCase();
+      const vb = (b[sortCol]||'').toLowerCase();
+      return va < vb ? -sortDir : va > vb ? sortDir : 0;
+    });
+  }
+
+  const companies = [...new Set(assets.filter(a=>a.category===category).map(a=>a.company).filter(Boolean))];
+
+  return `
+    <div class="topbar">
+      <h2>${catLabel}</h2>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="openAddModal('${category}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Asset
+        </button>
+      </div>
+    </div>
+    <div class="asset-list-wrap">
+      <div class="asset-list-toolbar">
+        <input class="search-input" type="text" placeholder="Search ${catLabel.toLowerCase()}..." value="${searchQuery}" oninput="searchQuery=this.value;render()">
+        <select class="filter-select" onchange="filterStatus=this.value;render()">
+          <option value="">All Status</option>
+          <option value="Active" ${filterStatus==='Active'?'selected':''}>Active</option>
+          <option value="Maintenance" ${filterStatus==='Maintenance'?'selected':''}>Maintenance</option>
+          <option value="Retired" ${filterStatus==='Retired'?'selected':''}>Retired</option>
+        </select>
+        <select class="filter-select" onchange="filterCompany=this.value;render()">
+          <option value="">All Companies</option>
+          ${companies.map(c => `<option value="${c}" ${filterCompany===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+        <span style="font-size:12px;color:var(--text-muted);margin-left:auto;">${filtered.length} record${filtered.length!==1?'s':''}</span>
+      </div>
+      <div class="asset-list-header">
+        <span onclick="toggleSort('type')">Asset ${sortIcon('type')}</span>
+        <span onclick="toggleSort('company')">Company ${sortIcon('company')}</span>
+        <span onclick="toggleSort('location')">Stats</span>
+        <span style="text-align:right;">Actions</span>
+      </div>
+      ${filtered.length ? filtered.map(a => `
+        <div class="asset-card-row" onclick="viewDetail('${a.id}')">
+          <div class="asset-card-info">
+            ${a.thumbnail ? `<img class="asset-card-thumb" src="${a.thumbnail}" alt="">` :
+              `<div class="asset-card-thumb-placeholder"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>`}
+            <div class="asset-card-text">
+              <div class="asset-card-name">${a.type}</div>
+              <div class="asset-card-sub">${a.model||''} ${a.serial ? '&middot; ' + a.serial.slice(-6) : ''}</div>
+              <div class="asset-card-badges">
+                <span class="badge badge-${a.status.toLowerCase()}">${a.status}</span>
+                ${a.location ? `<span style="font-size:11px;color:var(--text-muted);">${a.location}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            ${companyAvatar(a.company)}
+            <span style="font-size:12px;color:var(--text-secondary);">${(COMPANY_AVATARS[a.company]||{}).initials||''}</span>
+          </div>
+          <div class="asset-card-stats">
+            ${a.hours ? `<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>${a.hours}h</span>` : ''}
+            ${a.miles ? `<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14V9l-3-5H8L5 9z"/></svg>${a.miles}mi</span>` : ''}
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>${docCount(a)}</span>
+          </div>
+          <div class="asset-card-actions" onclick="event.stopPropagation()">
+            <button onclick="openEditModal('${a.id}')" title="Edit">Edit</button>
+            <button class="del" onclick="deleteAsset('${a.id}')" title="Delete">&times;</button>
+          </div>
+        </div>`).join('') : `
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
+          <p>No ${catLabel.toLowerCase()} found${searchQuery||filterStatus||filterCompany?' matching your filters':' yet'}.</p>
+        </div>`}
+    </div>
+  `;
+}
+
+// ── Maintenance View ──
+function renderMaintenance() {
+  const sorted = [...maintRecords].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const totalCost = maintRecords.reduce((s,m) => s + (parseFloat((m.cost||'0').replace(/[$,]/g,''))||0), 0);
+  const completed = maintRecords.filter(m => m.status === 'Completed').length;
+  const scheduled = maintRecords.filter(m => m.status === 'Scheduled').length;
+  const inProgress = maintRecords.filter(m => m.status === 'In Progress').length;
+
+  // Upcoming due
+  const upcoming = maintRecords.filter(m => m.nextDue && daysUntil(m.nextDue) >= 0 && daysUntil(m.nextDue) <= 30).length;
+
+  return `
+    <div class="topbar">
+      <h2>Maintenance</h2>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="openMaintModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Log Service
+        </button>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Records</div>
+        <div class="stat-value">${maintRecords.length}</div>
+        <div class="stat-sub">${completed} completed · ${scheduled} scheduled</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Cost</div>
+        <div class="stat-value">$${totalCost.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div>
+        <div class="stat-sub">All-time maintenance spend</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">In Progress</div>
+        <div class="stat-value" style="color:var(--warning)">${inProgress}</div>
+        <div class="stat-sub">Active service orders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Due Soon</div>
+        <div class="stat-value" style="color:${upcoming?'var(--warning)':'var(--success)'}">${upcoming}</div>
+        <div class="stat-sub">Next 30 days</div>
+      </div>
+    </div>
+    <div class="asset-list-wrap">
+      <div class="maint-header">
+        <span>Asset / Service</span>
+        <span>Date</span>
+        <span>Cost</span>
+        <span>Status</span>
+        <span style="text-align:right;">Actions</span>
+      </div>
+      ${sorted.length ? sorted.map(m => {
+        const a = assets.find(x => x.id === m.assetId);
+        return `
+        <div class="maint-row">
+          <div>
+            <div style="font-weight:600;font-size:14px;">${m.service}</div>
+            <div style="font-size:12px;color:var(--text-secondary);">${a ? a.type + (a.model ? ' — ' + a.model : '') : 'Unknown asset'}</div>
+            ${m.vendor ? `<div style="font-size:11px;color:var(--text-muted);">${m.vendor}</div>` : ''}
+          </div>
+          <div>
+            <div style="font-size:13px;">${m.date || '—'}</div>
+            ${m.nextDue ? `<div style="font-size:11px;color:${daysUntil(m.nextDue)<=30?'var(--warning)':'var(--text-muted)'};">Next: ${m.nextDue}</div>` : ''}
+          </div>
+          <div style="font-weight:600;font-variant-numeric:tabular-nums;">${m.cost ? '$'+m.cost : '—'}</div>
+          <div>${maintStatusBadge(m.status)}</div>
+          <div style="text-align:right;">
+            <button style="padding:4px 8px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;border-radius:var(--radius);font-size:12px;font-family:var(--font-body);" onclick="editMaintRecord('${m.id}')">Edit</button>
+            <button style="padding:4px 8px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;border-radius:var(--radius);font-size:12px;font-family:var(--font-body);" onclick="deleteMaintRecord('${m.id}')">&times;</button>
+          </div>
+        </div>`;
+      }).join('') : `
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          <p>No maintenance records yet. Log your first service to start tracking.</p>
+        </div>`}
+    </div>
+  `;
+}
+
+// ── Compliance View ──
+function renderCompliance() {
+  // Auto-update status based on dates
+  compRecords.forEach(c => { c.status = complianceStatus(c.expires); });
+
+  const sorted = [...compRecords].sort((a,b) => {
+    const order = {Overdue:0,Upcoming:1,Current:2};
+    if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
+    return (a.expires||'').localeCompare(b.expires||'');
+  });
+  const overdue = compRecords.filter(c => c.status === 'Overdue').length;
+  const upcoming = compRecords.filter(c => c.status === 'Upcoming').length;
+  const current = compRecords.filter(c => c.status === 'Current').length;
+
+  return `
+    <div class="topbar">
+      <h2>Compliance</h2>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="openCompModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Item
+        </button>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Items</div>
+        <div class="stat-value">${compRecords.length}</div>
+        <div class="stat-sub">Insurance, registrations, inspections</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Current</div>
+        <div class="stat-value" style="color:var(--success)">${current}</div>
+        <div class="stat-sub"><span class="stat-indicator" style="background:var(--success)"></span>Up to date</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Due Soon</div>
+        <div class="stat-value" style="color:var(--warning)">${upcoming}</div>
+        <div class="stat-sub"><span class="stat-indicator" style="background:var(--warning)"></span>Within 30 days</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Overdue</div>
+        <div class="stat-value" style="color:var(--danger)">${overdue}</div>
+        <div class="stat-sub">${overdue ? '<span class="stat-indicator" style="background:var(--danger)"></span>Needs attention' : '<span class="stat-indicator" style="background:var(--success)"></span>None overdue'}</div>
+      </div>
+    </div>
+    <div class="asset-list-wrap">
+      <div class="compliance-header">
+        <span>Item / Asset</span>
+        <span>Type</span>
+        <span>Expires</span>
+        <span>Status</span>
+        <span style="text-align:right;">Actions</span>
+      </div>
+      ${sorted.length ? sorted.map(c => {
+        const a = assets.find(x => x.id === c.assetId);
+        const days = daysUntil(c.expires);
+        const daysLabel = days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? 'Today' : `${days}d left`;
+        return `
+        <div class="compliance-row">
+          <div>
+            <div style="font-weight:600;font-size:14px;">${c.provider || c.type}</div>
+            <div style="font-size:12px;color:var(--text-secondary);">${a ? a.type + (a.model ? ' — ' + a.model : '') : 'Unknown asset'}</div>
+            ${c.ref ? `<div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);">${c.ref}</div>` : ''}
+          </div>
+          <div><span class="badge badge-${c.type.toLowerCase().replace(/\s/g,'-')}" style="background:var(--surface-alt);color:var(--text-secondary);">${c.type}</span></div>
+          <div>
+            <div style="font-size:13px;">${c.expires || '—'}</div>
+            <div style="font-size:11px;color:${c.status==='Overdue'?'var(--danger)':c.status==='Upcoming'?'var(--warning)':'var(--text-muted)'};">${daysLabel}</div>
+          </div>
+          <div>${complianceBadge(c.status)}</div>
+          <div style="text-align:right;">
+            <button style="padding:4px 8px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;border-radius:var(--radius);font-size:12px;font-family:var(--font-body);" onclick="editCompRecord('${c.id}')">Edit</button>
+            <button style="padding:4px 8px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;border-radius:var(--radius);font-size:12px;font-family:var(--font-body);" onclick="deleteCompRecord('${c.id}')">&times;</button>
+          </div>
+        </div>`;
+      }).join('') : `
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <p>No compliance items tracked yet. Add insurance policies, registrations, and inspections.</p>
+        </div>`}
+    </div>
+  `;
+}
+
+function renderDetail(id) {
+  const a = assets.find(x => x.id === id);
+  if (!a) return '<p>Asset not found.</p>';
+  const catBadge = {Fleet:'badge-fleet',Tool:'badge-tool'}[a.category]||'';
+
+  // Maintenance records for this asset
+  const assetMaint = maintRecords.filter(m => m.assetId === id).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const assetComp = compRecords.filter(c => c.assetId === id);
+  const assetOperators = operators.filter(o => (o.assignedAssets||[]).includes(id));
+
+  return `
+    <div class="detail-header">
+      <div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+          <span class="badge ${catBadge}">${a.category}</span>
+          <span class="badge badge-${a.status.toLowerCase()}">${a.status}</span>
+          ${companyAvatar(a.company)}
+        </div>
+        <div class="detail-title">${a.type}</div>
+        <div style="color:var(--text-secondary);font-size:14px;">${a.model||''} ${a.fleet?'&middot; Fleet #'+a.fleet:''}</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" onclick="navigate('${a.category.toLowerCase()}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15,18 9,12 15,6"/></svg>
+          Back
+        </button>
+        <button class="btn" onclick="openEditModal('${a.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteAsset('${a.id}');navigate('${a.category.toLowerCase()}')">Delete</button>
+      </div>
+    </div>
+    ${a.thumbnail ? `<div class="detail-section" style="margin-bottom:16px;"><img class="detail-photo" src="${a.thumbnail}" alt="${a.type}">` + (a.photoPath ? `<div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);">Full-res: ${a.photoPath}</div>` : '') + `</div>` : ''}
+    <div class="detail-grid">
+      <div class="detail-section">
+        <h4>Identification</h4>
+        <div class="detail-row"><span class="dl">Type</span><span class="dv">${a.type}</span></div>
+        <div class="detail-row"><span class="dl">Model</span><span class="dv">${a.model||'—'}</span></div>
+        <div class="detail-row"><span class="dl">Serial / VIN</span><span class="dv mono">${a.serial||'—'}</span></div>
+        <div class="detail-row"><span class="dl">Fleet #</span><span class="dv">${a.fleet||'—'}</span></div>
+        <div class="detail-row"><span class="dl">Company</span><span class="dv" style="display:flex;align-items:center;gap:6px;justify-content:flex-end;">${companyAvatar(a.company)} ${a.company||'—'}</span></div>
+      </div>
+      <div class="detail-section">
+        <h4>Location & Contact</h4>
+        <div class="detail-row"><span class="dl">Location</span><span class="dv">${a.location||'—'}</span></div>
+        <div class="detail-row"><span class="dl">Address</span><span class="dv" style="max-width:200px;text-wrap:balance;">${a.address||'—'}</span></div>
+        <div class="detail-row"><span class="dl">Contact</span><span class="dv">${a.contact||'—'}</span></div>
+        <div class="detail-row"><span class="dl">Phone</span><span class="dv">${a.phone||'—'}</span></div>
+      </div>
+      <div class="detail-section">
+        <h4>Usage & Meters</h4>
+        <div class="detail-row"><span class="dl">Hours</span><span class="dv">${a.hours||'—'}</span></div>
+        <div class="detail-row"><span class="dl">Miles</span><span class="dv">${a.miles||'—'}</span></div>
+        <div class="detail-row"><span class="dl">Status</span><span class="dv"><span class="badge badge-${a.status.toLowerCase()}">${a.status}</span></span></div>
+      </div>
+      <div class="detail-section">
+        <h4>Insurance & Finance</h4>
+        <div class="detail-row"><span class="dl">Insurance</span><span class="dv">${a.insurance||'—'}</span></div>
+        <div class="detail-row"><span class="dl">Policy #</span><span class="dv mono">${a.policy||'—'}</span></div>
+        <div class="detail-row"><span class="dl">Finance</span><span class="dv">${a.finance||'—'}</span></div>
+      </div>
+    </div>
+    ${a.notes ? `<div class="detail-section"><h4>Notes</h4><p style="font-size:13.5px;color:var(--text-secondary);">${a.notes}</p></div>` : ''}
+
+    <!-- Maintenance history on detail -->
+    <div class="detail-section" style="margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h4 style="margin:0;">Maintenance History <span class="doc-count-badge ${assetMaint.length?'has-docs':''}">${assetMaint.length}</span></h4>
+        <button class="btn btn-sm" onclick="openMaintModal('${a.id}')">+ Log Service</button>
+      </div>
+      ${assetMaint.length ? `<ul class="doc-list">${assetMaint.map(m => `
+        <li class="doc-item">
+          <div class="doc-icon" style="background:var(--warning-bg);color:var(--warning);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <div class="doc-info">
+            <div class="doc-name">${m.service}</div>
+            <div class="doc-meta">
+              <span>${m.date||'—'}</span>
+              ${m.cost ? `<span>$${m.cost}</span>` : ''}
+              ${m.vendor ? `<span>${m.vendor}</span>` : ''}
+              <span>${maintStatusBadge(m.status)}</span>
+            </div>
+            ${m.notes ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${m.notes}</div>` : ''}
+          </div>
+        </li>`).join('')}</ul>` : `<p style="font-size:13px;color:var(--text-muted);">No maintenance records for this asset yet.</p>`}
+    </div>
+
+    <!-- Compliance on detail -->
+    <div class="detail-section" style="margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h4 style="margin:0;">Compliance <span class="doc-count-badge ${assetComp.length?'has-docs':''}">${assetComp.length}</span></h4>
+        <button class="btn btn-sm" onclick="openCompModal('${a.id}')">+ Add Item</button>
+      </div>
+      ${assetComp.length ? `<ul class="doc-list">${assetComp.map(c => {
+        const days = daysUntil(c.expires);
+        const daysLabel = days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? 'Expires today' : `${days}d remaining`;
+        return `
+        <li class="doc-item">
+          <div class="doc-icon" style="background:${c.status==='Overdue'?'var(--danger-bg)':c.status==='Upcoming'?'var(--warning-bg)':'var(--success-bg)'};color:${c.status==='Overdue'?'var(--danger)':c.status==='Upcoming'?'var(--warning)':'var(--success)'};">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="doc-info">
+            <div class="doc-name">${c.type} — ${c.provider||''}</div>
+            <div class="doc-meta">
+              <span>Expires: ${c.expires||'—'}</span>
+              <span style="color:${c.status==='Overdue'?'var(--danger)':c.status==='Upcoming'?'var(--warning)':'var(--text-muted)'};">${daysLabel}</span>
+              <span>${complianceBadge(c.status)}</span>
+            </div>
+            ${c.ref ? `<div class="doc-path">${c.ref}</div>` : ''}
+          </div>
+        </li>`;
+      }).join('')}</ul>` : `<p style="font-size:13px;color:var(--text-muted);">No compliance items tracked for this asset.</p>`}
+    </div>
+
+    <div class="detail-section" style="margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h4 style="margin:0;">Assigned Operators <span class="doc-count-badge ${assetOperators.length?'has-docs':''}">${assetOperators.length}</span></h4>
+        <button class="btn btn-sm" onclick="navigate('operators')">Manage Operators</button>
+      </div>
+      ${assetOperators.length ? `<ul class="doc-list">${assetOperators.map(o => `
+        <li class="doc-item">
+          ${operatorAvatarHtml(o)}
+          <div class="doc-info">
+            <div class="doc-name">${o.name}</div>
+            <div class="doc-meta">
+              <span>${o.role||''}</span>
+              ${o.phone ? `<span>${o.phone}</span>` : ''}
+              <span>${operatorBadge(o.status)}</span>
+            </div>
+          </div>
+        </li>`).join('')}</ul>` : `<p style="font-size:13px;color:var(--text-muted);">No operators assigned to this asset yet.</p>`}
+    </div>
+
+    <div class="detail-section" style="margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h4 style="margin:0;">Documents <span class="doc-count-badge ${(a.documents&&a.documents.length)?'has-docs':''}">${(a.documents&&a.documents.length)||0}</span></h4>
+        <button class="btn btn-sm" onclick="openDocModal('${a.id}')">+ Add Document</button>
+      </div>
+      ${(a.documents&&a.documents.length) ? `<ul class="doc-list">${a.documents.map((d,i) => `
+        <li class="doc-item">
+          <div class="doc-icon doc-icon-${d.type.toLowerCase()}">${d.type.slice(0,3)}</div>
+          <div class="doc-info">
+            <div class="doc-name">${d.name}</div>
+            <div class="doc-meta"><span>${d.type}</span>${d.date?`<span>${d.date}</span>`:''}</div>
+            ${d.path?`<div class="doc-path">${d.path}</div>`:''}
+            ${d.notes?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${d.notes}</div>`:''}
+          </div>
+          <button class="doc-remove" onclick="removeDocument('${a.id}',${i})" title="Remove">&times;</button>
+        </li>`).join('')}</ul>` : `<p style="font-size:13px;color:var(--text-muted);">No documents attached. Add insurance certs, registrations, inspection reports, or receipts.</p>`}
+    </div>
+    <div style="margin-top:16px;font-size:12px;color:var(--text-muted);">Record created: ${a.created||'—'}</div>
+  `;
+}
+
+function operatorBadge(status) {
+  const cls = {Active:'badge-active','On Leave':'badge-onleave',Inactive:'badge-retired'}[status] || 'badge-active';
+  return `<span class="badge ${cls}">${status}</span>`;
+}
+
+function operatorAvatarHtml(o, size) {
+  size = size || 'operator-avatar';
+  if (o.photo) return `<img class="${size} operator-avatar-img" src="${o.photo}" alt="${o.name}">`;
+  return `<span class="${size}">${operatorInitials(o.name)}</span>`;
+}
+
+function operatorInitials(name) {
+  return (name||'').trim().split(/\s+/).map(p=>p[0]).slice(0,2).join('').toUpperCase() || '?';
+}
+
+function renderOperators() {
+  let filtered = [...operators];
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(o =>
+      (o.name||'').toLowerCase().includes(q) ||
+      (o.role||'').toLowerCase().includes(q) ||
+      (o.company||'').toLowerCase().includes(q) ||
+      (o.location||'').toLowerCase().includes(q)
+    );
+  }
+  filtered.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+  const active = operators.filter(o => o.status === 'Active').length;
+  const cdl = operators.filter(o => o.license && o.license !== '').length;
+  const expSoon = operators.filter(o => o.licenseExp && daysUntil(o.licenseExp) <= 30 && daysUntil(o.licenseExp) >= 0).length;
+
+  return `
+    <div class="topbar">
+      <h2>Operators</h2>
+      <div class="topbar-actions">
+        <input type="search" class="search-input" placeholder="Search operators..." value="${searchQuery}" oninput="searchQuery=this.value;render();" style="margin-right:8px;">
+        <button class="btn btn-primary" onclick="openOperModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Operator
+        </button>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Operators</div>
+        <div class="stat-value">${operators.length}</div>
+        <div class="stat-sub">Drivers, foremen & crew</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active</div>
+        <div class="stat-value" style="color:var(--success)">${active}</div>
+        <div class="stat-sub"><span class="stat-indicator" style="background:var(--success)"></span>${operators.length?Math.round(active/operators.length*100):0}% of roster</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">CDL / Licensed</div>
+        <div class="stat-value">${cdl}</div>
+        <div class="stat-sub">Hold a license or certification on file</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">License Expiring Soon</div>
+        <div class="stat-value" style="color:${expSoon?'var(--warning)':'inherit'}">${expSoon}</div>
+        <div class="stat-sub">${expSoon ? '<span class="stat-indicator" style="background:var(--warning)"></span>Within 30 days' : 'None due soon'}</div>
+      </div>
+    </div>
+    <div class="asset-list-wrap">
+      <div class="operator-header">
+        <span>Name</span>
+        <span>Role</span>
+        <span>Company</span>
+        <span>License</span>
+        <span>Status</span>
+        <span style="text-align:right;">Actions</span>
+      </div>
+      ${filtered.length ? filtered.map(o => {
+        const assetCount = (o.assignedAssets||[]).length;
+        return `
+        <div class="operator-row">
+          <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+            ${operatorAvatarHtml(o)}
+            <div style="min-width:0;">
+              <div style="font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.name}</div>
+              <div style="font-size:12px;color:var(--text-secondary);">${o.location||''}</div>
+            </div>
+          </div>
+          <div>${o.role||'—'}</div>
+          <div style="display:flex;align-items:center;gap:6px;">${companyAvatar(o.company)} <span style="font-size:12.5px;">${o.company||'—'}</span></div>
+          <div>
+            <div style="font-size:13px;">${o.license || '—'}</div>
+            ${o.licenseExp ? `<div style="font-size:11px;color:${daysUntil(o.licenseExp)<0?'var(--danger)':daysUntil(o.licenseExp)<=30?'var(--warning)':'var(--text-muted)'};">Exp ${o.licenseExp}</div>` : ''}
+          </div>
+          <div>${operatorBadge(o.status)}</div>
+          <div style="text-align:right;">
+            <button style="padding:4px 8px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;border-radius:var(--radius);font-size:12px;font-family:var(--font-body);" onclick="editOperator('${o.id}')">Edit</button>
+            <button style="padding:4px 8px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;border-radius:var(--radius);font-size:12px;font-family:var(--font-body);" onclick="deleteOperator('${o.id}')">&times;</button>
+          </div>
+        </div>`;
+      }).join('') : `
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <p>No operators added yet. Add the people who drive and operate your fleet.</p>
+        </div>`}
+    </div>
+  `;
+}
+
+function renderSettings() {
+  const options = [
+    { value: 'system', label: 'System', desc: 'Match your device setting', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/></svg>' },
+    { value: 'light', label: 'Light', desc: 'Bright background, dark text', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>' },
+    { value: 'dark', label: 'Dark', desc: 'Dim background, light text', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>' }
+  ];
+
+  return `
+    <div class="topbar"><h2>Settings</h2></div>
+    <div class="detail-section" style="max-width:640px;">
+      <h4>Appearance</h4>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Choose how the dashboard looks on this device.</p>
+      <div class="theme-option-grid">
+        ${options.map(o => `
+          <button type="button" class="theme-option ${currentTheme === o.value ? 'active' : ''}" onclick="setTheme('${o.value}')">
+            ${o.icon}
+            <div class="theme-option-label">${o.label}</div>
+            <div class="theme-option-desc">${o.desc}</div>
+          </button>`).join('')}
+      </div>
+    </div>
+    <div class="detail-section" style="max-width:640px;margin-top:16px;">
+      <h4>About</h4>
+      <div class="detail-row"><span class="dl">App</span><span class="dv">DACP Fleet & Asset Registry</span></div>
+      <div class="detail-row"><span class="dl">Version</span><span class="dv">1.2</span></div>
+      <div class="detail-row"><span class="dl">Data storage</span><span class="dv">Local (this browser)</span></div>
+    </div>
+  `;
+}
+
+function renderExport() {
+  return `
+    <div class="topbar"><h2>Export Data</h2></div>
+    <div class="export-section" style="margin-bottom:16px;">
+      <h3>Export as CSV</h3>
+      <p>Download your full asset registry as a CSV file you can open in Excel, Google Sheets, or import into other systems.</p>
+      <div class="export-grid">
+        <button class="btn btn-primary" onclick="exportCSV('all')">All Assets</button>
+        <button class="btn" onclick="exportCSV('Fleet')">Fleet & Equipment Only</button>
+        <button class="btn" onclick="exportCSV('Tool')">Tools Only</button>
+      </div>
+    </div>
+    <div class="export-section" style="margin-bottom:16px;">
+      <h3>Export Maintenance Log</h3>
+      <p>Download all maintenance records as CSV.</p>
+      <div class="export-grid">
+        <button class="btn btn-primary" onclick="exportMaintCSV()">Export Maintenance CSV</button>
+      </div>
+    </div>
+    <div class="export-section" style="margin-bottom:16px;">
+      <h3>Export Compliance Tracker</h3>
+      <p>Download all compliance items as CSV.</p>
+      <div class="export-grid">
+        <button class="btn btn-primary" onclick="exportCompCSV()">Export Compliance CSV</button>
+      </div>
+    </div>
+    <div class="export-section" style="margin-bottom:16px;">
+      <h3>Export Operators</h3>
+      <p>Download the operator roster as CSV.</p>
+      <div class="export-grid">
+        <button class="btn btn-primary" onclick="exportOperatorsCSV()">Export Operators CSV</button>
+      </div>
+    </div>
+    <div class="export-section">
+      <h3>Export as JSON</h3>
+      <p>Machine-readable format for connecting to other dashboards, databases, or API integrations.</p>
+      <div class="export-grid">
+        <button class="btn btn-primary" onclick="exportJSON()">Export Full JSON</button>
+      </div>
+    </div>
+  `;
+}
+
+// ── Sort Helpers ──
+function sortIcon(col) {
+  if (sortCol !== col) return '';
+  return sortDir === 1 ? '&#9650;' : '&#9660;';
+}
+
+function toggleSort(col) {
+  if (sortCol === col) { sortDir *= -1; }
+  else { sortCol = col; sortDir = 1; }
+  render();
+}
+
+function viewDetail(id) {
+  currentView = 'detail:' + id;
+  render();
+}
+
+// ── Asset Modal ──
+function openAddModal(category) {
+  editingId = null;
+  pendingPhoto = null;
+  document.getElementById('modalTitle').textContent = 'Add New Asset';
+  document.getElementById('assetForm').reset();
+  if (category) document.getElementById('f_category').value = category;
+  document.getElementById('f_type_custom').hidden = true;
+  document.getElementById('f_type_custom').value = '';
+  const uploadArea = document.getElementById('photoUploadArea');
+  const preview = document.getElementById('photoPreview');
+  if (uploadArea) uploadArea.hidden = false;
+  if (preview) preview.hidden = true;
+  document.getElementById('f_photoPath').value = '';
+  document.getElementById('f_operatorPickerWrap').hidden = true;
+  document.getElementById('f_operatorPickerNote').hidden = false;
+  document.getElementById('modalOverlay').hidden = false;
+  setupPhotoUpload();
+}
+
+function openEditModal(id) {
+  const a = assets.find(x => x.id === id);
+  if (!a) return;
+  editingId = id;
+  pendingPhoto = a.thumbnail || null;
+  document.getElementById('modalTitle').textContent = 'Edit Asset';
+  const fields = ['category','type','model','serial','fleet','location','address','contact','phone','hours','miles','insurance','policy','finance','company','status','notes'];
+  fields.forEach(f => {
+    const el = document.getElementById('f_'+f);
+    if (el) el.value = a[f] || '';
+  });
+  // If type doesn't match a dropdown option, switch to custom
+  const typeSel = document.getElementById('f_type');
+  const typeCust = document.getElementById('f_type_custom');
+  if (typeSel.value !== a.type && a.type) {
+    typeSel.value = '__custom__';
+    typeCust.value = a.type;
+    typeCust.hidden = false;
+  } else {
+    typeCust.hidden = true;
+  }
+  document.getElementById('f_photoPath').value = a.photoPath || '';
+  const uploadArea = document.getElementById('photoUploadArea');
+  const preview = document.getElementById('photoPreview');
+  if (pendingPhoto) {
+    showPhotoPreview(pendingPhoto);
+  } else {
+    if (uploadArea) uploadArea.hidden = false;
+    if (preview) preview.hidden = true;
+  }
+  document.getElementById('f_operatorPickerWrap').hidden = false;
+  document.getElementById('f_operatorPickerNote').hidden = true;
+  document.getElementById('f_operatorSearch').value = '';
+  document.getElementById('f_assignedOperators').innerHTML = operatorCheckboxOptions(a.id);
+  document.getElementById('modalOverlay').hidden = false;
+  setupPhotoUpload();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').hidden = true;
+  editingId = null;
+}
+
+function saveAsset() {
+  const form = document.getElementById('assetForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const fields = ['category','type','model','serial','fleet','location','address','contact','phone','hours','miles','insurance','policy','finance','company','status','notes'];
+  const data = {};
+  fields.forEach(f => {
+    let val = document.getElementById('f_'+f).value.trim();
+    if (f === 'type' && val === '__custom__') val = document.getElementById('f_type_custom').value.trim();
+    data[f] = val;
+  });
+
+  data.thumbnail = pendingPhoto || '';
+  data.photoPath = document.getElementById('f_photoPath').value.trim();
+
+  if (editingId) {
+    const idx = assets.findIndex(a => a.id === editingId);
+    if (idx >= 0) Object.assign(assets[idx], data);
+    const checkedOperatorIds = Array.from(document.querySelectorAll('#f_assignedOperators input[type="checkbox"]:checked')).map(c => c.value);
+    operators.forEach(o => {
+      o.assignedAssets = o.assignedAssets || [];
+      const has = o.assignedAssets.includes(editingId);
+      const shouldHave = checkedOperatorIds.includes(o.id);
+      if (shouldHave && !has) o.assignedAssets.push(editingId);
+      if (!shouldHave && has) o.assignedAssets = o.assignedAssets.filter(id => id !== editingId);
+    });
+    showToast('Asset updated');
+  } else {
+    data.id = 'a' + Date.now();
+    data.created = new Date().toISOString().split('T')[0];
+    data.documents = [];
+    assets.push(data);
+    showToast('Asset added');
+  }
+  pendingPhoto = null;
+  saveDataStore();
+  closeModal();
+  render();
+}
+
+function deleteAsset(id) {
+  const a = assets.find(x => x.id === id);
+  if (!a) return;
+  if (!confirm(`Delete "${a.type} — ${a.model||a.serial||''}"?`)) return;
+  assets = assets.filter(x => x.id !== id);
+  saveDataStore();
+  showToast('Asset deleted');
+  render();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.hidden = false;
+  setTimeout(() => { t.hidden = true; }, 2500);
+}
+
+// ── Maintenance Modal ──
+function openMaintModal(preselectedAssetId) {
+  editingMaintId = null;
+  document.getElementById('maintModalTitle').textContent = 'Log Maintenance';
+  document.getElementById('maintForm').reset();
+  document.getElementById('m_asset').innerHTML = assetSelectOptions();
+  if (preselectedAssetId) document.getElementById('m_asset').value = preselectedAssetId;
+  document.getElementById('m_date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('maintModalOverlay').hidden = false;
+}
+
+function editMaintRecord(id) {
+  const m = maintRecords.find(x => x.id === id);
+  if (!m) return;
+  editingMaintId = id;
+  document.getElementById('maintModalTitle').textContent = 'Edit Maintenance Record';
+  document.getElementById('m_asset').innerHTML = assetSelectOptions();
+  document.getElementById('m_asset').value = m.assetId;
+  document.getElementById('m_service').value = m.service || '';
+  document.getElementById('m_status').value = m.status || 'Completed';
+  document.getElementById('m_date').value = m.date || '';
+  document.getElementById('m_nextDue').value = m.nextDue || '';
+  document.getElementById('m_cost').value = m.cost || '';
+  document.getElementById('m_vendor').value = m.vendor || '';
+  document.getElementById('m_hours_maint').value = m.hoursAtService || '';
+  document.getElementById('m_miles_maint').value = m.milesAtService || '';
+  document.getElementById('m_notes').value = m.notes || '';
+  document.getElementById('maintModalOverlay').hidden = false;
+}
+
+function closeMaintModal() {
+  document.getElementById('maintModalOverlay').hidden = true;
+  editingMaintId = null;
+}
+
+function saveMaintRecord() {
+  const form = document.getElementById('maintForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const data = {
+    assetId: document.getElementById('m_asset').value,
+    service: document.getElementById('m_service').value,
+    status: document.getElementById('m_status').value,
+    date: document.getElementById('m_date').value,
+    nextDue: document.getElementById('m_nextDue').value,
+    cost: document.getElementById('m_cost').value.trim().replace(/[$,]/g,''),
+    vendor: document.getElementById('m_vendor').value.trim(),
+    hoursAtService: document.getElementById('m_hours_maint').value.trim(),
+    milesAtService: document.getElementById('m_miles_maint').value.trim(),
+    notes: document.getElementById('m_notes').value.trim()
+  };
+
+  if (editingMaintId) {
+    const idx = maintRecords.findIndex(m => m.id === editingMaintId);
+    if (idx >= 0) Object.assign(maintRecords[idx], data);
+    showToast('Record updated');
+  } else {
+    data.id = 'mt' + Date.now();
+    data.created = new Date().toISOString().split('T')[0];
+    maintRecords.push(data);
+    showToast('Maintenance logged');
+  }
+  saveDataStore();
+  closeMaintModal();
+  render();
+}
+
+function deleteMaintRecord(id) {
+  const m = maintRecords.find(x => x.id === id);
+  if (!m) return;
+  if (!confirm(`Delete maintenance record "${m.service}"?`)) return;
+  maintRecords = maintRecords.filter(x => x.id !== id);
+  saveDataStore();
+  showToast('Record deleted');
+  render();
+}
+
+// ── Compliance Modal ──
+function openCompModal(preselectedAssetId) {
+  editingCompId = null;
+  document.getElementById('compModalTitle').textContent = 'Add Compliance Item';
+  document.getElementById('compForm').reset();
+  document.getElementById('c_asset').innerHTML = assetSelectOptions();
+  if (preselectedAssetId) document.getElementById('c_asset').value = preselectedAssetId;
+  document.getElementById('compModalOverlay').hidden = false;
+}
+
+function editCompRecord(id) {
+  const c = compRecords.find(x => x.id === id);
+  if (!c) return;
+  editingCompId = id;
+  document.getElementById('compModalTitle').textContent = 'Edit Compliance Item';
+  document.getElementById('c_asset').innerHTML = assetSelectOptions();
+  document.getElementById('c_asset').value = c.assetId;
+  document.getElementById('c_type').value = c.type || '';
+  document.getElementById('c_status').value = c.status || 'Current';
+  document.getElementById('c_issued').value = c.issued || '';
+  document.getElementById('c_expires').value = c.expires || '';
+  document.getElementById('c_provider').value = c.provider || '';
+  document.getElementById('c_ref').value = c.ref || '';
+  document.getElementById('c_notes').value = c.notes || '';
+  document.getElementById('compModalOverlay').hidden = false;
+}
+
+function closeCompModal() {
+  document.getElementById('compModalOverlay').hidden = true;
+  editingCompId = null;
+}
+
+function saveCompRecord() {
+  const form = document.getElementById('compForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const data = {
+    assetId: document.getElementById('c_asset').value,
+    type: document.getElementById('c_type').value,
+    status: document.getElementById('c_status').value,
+    issued: document.getElementById('c_issued').value,
+    expires: document.getElementById('c_expires').value,
+    provider: document.getElementById('c_provider').value.trim(),
+    ref: document.getElementById('c_ref').value.trim(),
+    notes: document.getElementById('c_notes').value.trim()
+  };
+  // Auto-calc status
+  data.status = complianceStatus(data.expires);
+
+  if (editingCompId) {
+    const idx = compRecords.findIndex(c => c.id === editingCompId);
+    if (idx >= 0) Object.assign(compRecords[idx], data);
+    showToast('Item updated');
+  } else {
+    data.id = 'cp' + Date.now();
+    data.created = new Date().toISOString().split('T')[0];
+    compRecords.push(data);
+    showToast('Compliance item added');
+  }
+  saveDataStore();
+  closeCompModal();
+  render();
+}
+
+function deleteCompRecord(id) {
+  const c = compRecords.find(x => x.id === id);
+  if (!c) return;
+  if (!confirm(`Delete compliance item "${c.type} — ${c.provider||''}"?`)) return;
+  compRecords = compRecords.filter(x => x.id !== id);
+  saveDataStore();
+  showToast('Item deleted');
+  render();
+}
+
+// ── Operator Modal ──
+function assetCheckboxOptions(selected) {
+  selected = selected || [];
+  return assets.map(a => `
+    <label class="checkbox-item" data-search="${(assetLabel(a) + ' ' + (a.company||'')).toLowerCase()}">
+      <input type="checkbox" value="${a.id}" ${selected.includes(a.id) ? 'checked' : ''}>
+      <span>${assetLabel(a)} <span class="checkbox-item-sub">— ${a.company||''}</span></span>
+    </label>`).join('') || '<p style="font-size:12.5px;color:var(--text-muted);padding:8px;">No assets to assign yet.</p>';
+}
+
+function filterOperAssetOptions() {
+  const q = document.getElementById('op_assetSearch').value.trim().toLowerCase();
+  document.querySelectorAll('#op_assignedAssets .checkbox-item').forEach(item => {
+    item.style.display = !q || item.dataset.search.includes(q) ? '' : 'none';
+  });
+}
+
+function operatorCheckboxOptions(assetId) {
+  return operators.map(o => `
+    <label class="checkbox-item" data-search="${(o.name + ' ' + (o.role||'') + ' ' + (o.company||'')).toLowerCase()}">
+      <input type="checkbox" value="${o.id}" ${(o.assignedAssets||[]).includes(assetId) ? 'checked' : ''}>
+      <span>${o.name} <span class="checkbox-item-sub">— ${o.role||'Operator'}${o.company?' · '+o.company:''}</span></span>
+    </label>`).join('') || '<p style="font-size:12.5px;color:var(--text-muted);padding:8px;">No operators added yet.</p>';
+}
+
+function filterAssetOperatorOptions() {
+  const q = document.getElementById('f_operatorSearch').value.trim().toLowerCase();
+  document.querySelectorAll('#f_assignedOperators .checkbox-item').forEach(item => {
+    item.style.display = !q || item.dataset.search.includes(q) ? '' : 'none';
+  });
+}
+
+function updateLicenseExpHint() {
+  const val = document.getElementById('op_licenseExp').value;
+  const hint = document.getElementById('op_licenseExpHint');
+  if (!hint) return;
+  if (!val) { hint.textContent = ''; hint.className = 'field-hint'; return; }
+  const days = daysUntil(val);
+  if (days < 0) {
+    hint.textContent = `Expired ${Math.abs(days)} day${Math.abs(days)!==1?'s':''} ago`;
+    hint.className = 'field-hint field-hint-danger';
+  } else if (days <= 30) {
+    hint.textContent = `Expires in ${days} day${days!==1?'s':''}`;
+    hint.className = 'field-hint field-hint-warning';
+  } else {
+    hint.textContent = `Expires ${val}`;
+    hint.className = 'field-hint field-hint-muted';
+  }
+}
+
+function openOperModal() {
+  editingOperId = null;
+  pendingOperPhoto = null;
+  document.getElementById('operModalTitle').textContent = 'Add Operator';
+  document.getElementById('operForm').reset();
+  document.getElementById('op_assetSearch').value = '';
+  document.getElementById('op_assignedAssets').innerHTML = assetCheckboxOptions();
+  document.getElementById('op_photoUploadArea').hidden = false;
+  document.getElementById('op_photoPreview').hidden = true;
+  updateLicenseExpHint();
+  document.getElementById('operModalOverlay').hidden = false;
+  setupOperPhotoUpload();
+}
+
+function editOperator(id) {
+  const o = operators.find(x => x.id === id);
+  if (!o) return;
+  editingOperId = id;
+  pendingOperPhoto = o.photo || null;
+  document.getElementById('operModalTitle').textContent = 'Edit Operator';
+  document.getElementById('op_assetSearch').value = '';
+  document.getElementById('op_assignedAssets').innerHTML = assetCheckboxOptions(o.assignedAssets);
+  const fields = ['name','role','phone','email','company','location','license','licenseExp','certs','status','hireDate','notes'];
+  fields.forEach(f => {
+    const el = document.getElementById('op_'+f);
+    if (el) el.value = o[f] || '';
+  });
+  if (pendingOperPhoto) {
+    showOperPhotoPreview(pendingOperPhoto);
+  } else {
+    document.getElementById('op_photoUploadArea').hidden = false;
+    document.getElementById('op_photoPreview').hidden = true;
+  }
+  updateLicenseExpHint();
+  document.getElementById('operModalOverlay').hidden = false;
+  setupOperPhotoUpload();
+}
+
+function closeOperModal() {
+  document.getElementById('operModalOverlay').hidden = true;
+  editingOperId = null;
+}
+
+function saveOperator() {
+  const form = document.getElementById('operForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const fields = ['name','role','phone','email','company','location','license','licenseExp','certs','status','hireDate','notes'];
+  const data = {};
+  fields.forEach(f => { data[f] = document.getElementById('op_'+f).value.trim(); });
+  data.assignedAssets = Array.from(document.querySelectorAll('#op_assignedAssets input[type="checkbox"]:checked')).map(c => c.value);
+  data.photo = pendingOperPhoto || '';
+
+  if (editingOperId) {
+    const idx = operators.findIndex(o => o.id === editingOperId);
+    if (idx >= 0) Object.assign(operators[idx], data);
+    showToast('Operator updated');
+  } else {
+    data.id = 'op' + Date.now();
+    data.created = new Date().toISOString().split('T')[0];
+    operators.push(data);
+    showToast('Operator added');
+  }
+  pendingOperPhoto = null;
+  saveDataStore();
+  closeOperModal();
+  render();
+}
+
+function deleteOperator(id) {
+  const o = operators.find(x => x.id === id);
+  if (!o) return;
+  if (!confirm(`Delete operator "${o.name}"?`)) return;
+  operators = operators.filter(x => x.id !== id);
+  saveDataStore();
+  showToast('Operator deleted');
+  render();
+}
+
+// ── Export ──
+function exportCSV(category) {
+  const data = category === 'all' ? assets : assets.filter(a => a.category === category);
+  const cols = ['id','category','type','model','serial','fleet','location','address','contact','phone','hours','miles','insurance','policy','finance','company','status','notes','created'];
+  const header = cols.join(',');
+  const rows = data.map(a => cols.map(c => '"'+(a[c]||'').replace(/"/g,'""')+'"').join(','));
+  const csv = [header, ...rows].join('\n');
+  downloadBlob(csv, 'text/csv', `dacp_assets_${category}_${new Date().toISOString().split('T')[0]}.csv`);
+  showToast('CSV exported');
+}
+
+function exportMaintCSV() {
+  const cols = ['id','assetId','service','status','date','nextDue','cost','vendor','hoursAtService','milesAtService','notes'];
+  const header = cols.join(',');
+  const rows = maintRecords.map(m => cols.map(c => '"'+(m[c]||'').replace(/"/g,'""')+'"').join(','));
+  downloadBlob([header,...rows].join('\n'), 'text/csv', `dacp_maintenance_${new Date().toISOString().split('T')[0]}.csv`);
+  showToast('Maintenance CSV exported');
+}
+
+function exportCompCSV() {
+  const cols = ['id','assetId','type','status','issued','expires','provider','ref','notes'];
+  const header = cols.join(',');
+  const rows = compRecords.map(c => cols.map(k => '"'+(c[k]||'').replace(/"/g,'""')+'"').join(','));
+  downloadBlob([header,...rows].join('\n'), 'text/csv', `dacp_compliance_${new Date().toISOString().split('T')[0]}.csv`);
+  showToast('Compliance CSV exported');
+}
+
+function exportJSON() {
+  const full = { assets, maintenance: maintRecords, compliance: compRecords, operators };
+  downloadBlob(JSON.stringify(full, null, 2), 'application/json', `dacp_full_export_${new Date().toISOString().split('T')[0]}.json`);
+  showToast('JSON exported');
+}
+
+function exportOperatorsCSV() {
+  const cols = ['id','name','role','phone','email','company','location','license','licenseExp','certs','status','hireDate','notes'];
+  const header = cols.join(',');
+  const rows = operators.map(o => cols.map(c => '"'+(String(o[c]||'')).replace(/"/g,'""')+'"').join(','));
+  downloadBlob([header,...rows].join('\n'), 'text/csv', `dacp_operators_${new Date().toISOString().split('T')[0]}.csv`);
+  showToast('Operators CSV exported');
+}
+
+function downloadBlob(content, type, filename) {
+  const blob = new Blob([content], {type});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = filename;
+  link.click(); URL.revokeObjectURL(url);
+}
+
+function bindEvents() {}
+
+// ── Photo handling ──
+let pendingPhoto = null;
+
+function setupPhotoUpload() {
+  const zone = document.getElementById('photoDropZone');
+  const input = document.getElementById('f_photo_input');
+  if (!zone || !input) return;
+
+  input.addEventListener('change', e => {
+    if (e.target.files && e.target.files[0]) processPhoto(e.target.files[0]);
+  });
+
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) processPhoto(e.dataTransfer.files[0]);
+  });
+}
+
+function processPhoto(file) {
+  if (!file.type.startsWith('image/')) { showToast('Please select an image file'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const MAX = 300;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      pendingPhoto = canvas.toDataURL('image/jpeg', 0.6);
+      showPhotoPreview(pendingPhoto);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function showPhotoPreview(src) {
+  const uploadArea = document.getElementById('photoUploadArea');
+  const preview = document.getElementById('photoPreview');
+  const previewImg = document.getElementById('photoPreviewImg');
+  if (uploadArea) uploadArea.hidden = true;
+  if (preview) { preview.hidden = false; previewImg.src = src; }
+}
+
+function removePhoto() {
+  pendingPhoto = null;
+  const uploadArea = document.getElementById('photoUploadArea');
+  const preview = document.getElementById('photoPreview');
+  if (uploadArea) uploadArea.hidden = false;
+  if (preview) preview.hidden = true;
+  const input = document.getElementById('f_photo_input');
+  if (input) input.value = '';
+}
+
+// ── Operator Photo Upload ──
+let pendingOperPhoto = null;
+
+function setupOperPhotoUpload() {
+  const zone = document.getElementById('op_photoDropZone');
+  const input = document.getElementById('op_photo_input');
+  if (!zone || !input) return;
+
+  input.addEventListener('change', e => {
+    if (e.target.files && e.target.files[0]) processOperPhoto(e.target.files[0]);
+  });
+
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) processOperPhoto(e.dataTransfer.files[0]);
+  });
+}
+
+function processOperPhoto(file) {
+  if (!file.type.startsWith('image/')) { showToast('Please select an image file'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const MAX = 200;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      pendingOperPhoto = canvas.toDataURL('image/jpeg', 0.7);
+      showOperPhotoPreview(pendingOperPhoto);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function showOperPhotoPreview(src) {
+  const uploadArea = document.getElementById('op_photoUploadArea');
+  const preview = document.getElementById('op_photoPreview');
+  const previewImg = document.getElementById('op_photoPreviewImg');
+  if (uploadArea) uploadArea.hidden = true;
+  if (preview) { preview.hidden = false; previewImg.src = src; }
+}
+
+function removeOperPhoto() {
+  pendingOperPhoto = null;
+  const uploadArea = document.getElementById('op_photoUploadArea');
+  const preview = document.getElementById('op_photoPreview');
+  if (uploadArea) uploadArea.hidden = false;
+  if (preview) preview.hidden = true;
+  const input = document.getElementById('op_photo_input');
+  if (input) input.value = '';
+}
+
+// ── Documents ──
+let docAssetId = null;
+
+function openDocModal(assetId) {
+  docAssetId = assetId;
+  document.getElementById('docForm').reset();
+  document.getElementById('docModalOverlay').hidden = false;
+}
+
+function closeDocModal() {
+  document.getElementById('docModalOverlay').hidden = true;
+  docAssetId = null;
+}
+
+function saveDocument() {
+  const form = document.getElementById('docForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const asset = assets.find(a => a.id === docAssetId);
+  if (!asset) return;
+  if (!asset.documents) asset.documents = [];
+  asset.documents.push({
+    type: document.getElementById('d_type').value,
+    name: document.getElementById('d_name').value.trim(),
+    date: document.getElementById('d_date').value,
+    path: document.getElementById('d_path').value.trim(),
+    notes: document.getElementById('d_notes').value.trim(),
+    added: new Date().toISOString().split('T')[0]
+  });
+  saveDataStore();
+  closeDocModal();
+  showToast('Document added');
+  render();
+}
+
+function removeDocument(assetId, index) {
+  const asset = assets.find(a => a.id === assetId);
+  if (!asset || !asset.documents) return;
+  const doc = asset.documents[index];
+  if (!confirm(`Remove "${doc.name}"?`)) return;
+  asset.documents.splice(index, 1);
+  saveDataStore();
+  showToast('Document removed');
+  render();
+}
+
+// ── Init ──
+render();
+document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+// Close modals on overlay click
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+document.getElementById('operModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeOperModal(); });
+document.getElementById('docModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeDocModal(); });
+document.getElementById('maintModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeMaintModal(); });
+document.getElementById('compModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeCompModal(); });
+</script>
