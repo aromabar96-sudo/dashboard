@@ -692,6 +692,65 @@
     .theme-option-grid { grid-template-columns: 1fr; }
   }
 
+  /* Settings — help */
+  .help-callout {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--info-bg);
+    border: 1px solid var(--info);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .help-callout svg { flex-shrink: 0; color: var(--info); margin-top: 1px; }
+  .help-callout strong { color: var(--info); }
+  .help-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+    margin: 20px 0 8px;
+  }
+  .help-group-label:first-of-type { margin-top: 0; }
+  .help-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    overflow: hidden;
+    background: var(--surface-alt);
+  }
+  .help-item-q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    background: none;
+    border: none;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+  }
+  .help-item-q .chev { transition: transform .15s; color: var(--text-muted); flex-shrink: 0; }
+  .help-item.open .help-item-q .chev { transform: rotate(180deg); }
+  .help-item-a {
+    display: none;
+    padding: 0 14px 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  .help-item.open .help-item-a { display: block; }
+
 
   /* Detail view */
   .detail-header {
@@ -2510,7 +2569,57 @@ function renderSettings() {
       <div class="detail-row"><span class="dl">Version</span><span class="dv">1.2</span></div>
       <div class="detail-row"><span class="dl">Data storage</span><span class="dv">Local (this browser)</span></div>
     </div>
+    <div class="detail-section" style="max-width:640px;margin-top:16px;">
+      <h4>Help & Guide</h4>
+      <div class="help-callout">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div><strong>Heads up:</strong> this data is stored locally in your browser, not in the cloud. It's not shared between computers or coworkers, and clearing your browser data will erase it. Use <a href="#" onclick="navigate('export');return false;" style="color:var(--info);font-weight:600;">Export Data</a> regularly to keep a backup.</div>
+      </div>
+      ${renderHelpItems()}
+    </div>
   `;
+}
+
+function renderHelpItems() {
+  const groups = [
+    { label: 'Getting Started', items: [
+      { q: 'What is this app for?', a: 'It tracks every vehicle, machine, pump, and tool the company owns — where it is, who it belongs to, its maintenance history, insurance/registration status, and who\'s certified to operate it. Think of it as the single source of truth for the fleet, replacing spreadsheets and paper logs.' },
+      { q: 'How do I move around the app?', a: 'Use the sidebar on the left. "Assets" covers Fleet & Equipment and Tools — the physical items. "Operations" covers Maintenance, Compliance, and Operators — the ongoing work around those items. The Dashboard gives you a quick overview of everything at a glance.' }
+    ]},
+    { label: 'Assets', items: [
+      { q: 'How do I add a new asset?', a: 'Go to Fleet & Equipment or Tools and click "+ Add Asset" in the top right. Fill in the make/model, serial number, company, and location, then save. You can attach a photo and notes from the same form.' },
+      { q: 'How do I edit or remove an asset?', a: 'Find it in the list and use the "Edit" link on its row to update details, or the "×" to remove it. Removing an asset does not delete its past maintenance or compliance records.' },
+      { q: 'What do the status colors mean?', a: 'Green means active and in service. Amber/orange means in maintenance or due soon. Red means overdue or down. The same color logic is used across Compliance and Maintenance.' }
+    ]},
+    { label: 'Operations', items: [
+      { q: 'How do I log a maintenance service?', a: 'Go to Maintenance and click "+ Log Service." Pick the asset, describe the work, and enter the cost and date. It will show up in that asset\'s history and in the maintenance totals on the Dashboard.' },
+      { q: 'How do I track insurance or registration?', a: 'Go to Compliance and click "+ Add Item." Enter the type (insurance, registration, inspection), the asset it applies to, and its expiration date. Items due soon or overdue are flagged automatically.' },
+      { q: 'How do I add an operator?', a: 'Go to Operators and click "+ Add Operator." Enter their name, role, company, and license/CDL info if applicable. This lets you track who is certified to run which equipment.' }
+    ]},
+    { label: 'Data', items: [
+      { q: 'How do I back up or share the data?', a: 'Go to Export Data in the sidebar. You can export any section as CSV (for Excel/Sheets) or everything at once as JSON. Since data lives only in this browser, exporting regularly is the safest way to avoid losing it.' },
+      { q: 'Can I switch between light and dark mode?', a: 'Yes — up in Appearance above. "System" matches your device automatically; Light and Dark force one or the other.' }
+    ]}
+  ];
+  return groups.map(g => `
+    <div class="help-group-label">${g.label}</div>
+    ${g.items.map((item, i) => {
+      const id = `help-${g.label}-${i}`.replace(/\s+/g, '-');
+      return `
+      <div class="help-item" id="${id}">
+        <button type="button" class="help-item-q" onclick="toggleHelpItem('${id}')">
+          <span>${item.q}</span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="help-item-a">${item.a}</div>
+      </div>`;
+    }).join('')}
+  `).join('');
+}
+
+function toggleHelpItem(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
 }
 
 function renderExport() {
